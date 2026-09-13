@@ -3,63 +3,128 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>منصة المطعم - Qaima</title>
-<style>
-*{box-sizing:border-box}body{margin:0;background:#0f0f0f;color:#fff;font-family:system-ui}
-.top{display:flex;justify-content:space-between;align-items:center;padding:14px;background:#111;border-bottom:1px solid #222}
-.btn{background:#ff8a00;color:#000;border:0;padding:10px 14px;border-radius:9px;font-weight:900;cursor:pointer}.btn-d{background:#222;color:#fff;border:1px solid #333;padding:8px 10px;border-radius:8px;cursor:pointer}
-.login{max-width:380px;margin:60px auto;background:#151515;border:1px solid #222;border-radius:16px;padding:20px;text-align:center}
-input{background:#1e1e1e;border:1px solid #333;color:#fff;padding:12px;border-radius:10px;width:100%;margin-top:10px}
-.dash{display:none;max-width:1100px;margin:auto;padding:12px}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
-.card{background:#151515;border:1px solid #222;border-radius:12px;padding:12px}.card h3{margin:0;font-size:11px;color:#888}.card .num{font-size:20px;font-weight:900;margin-top:4px}
-.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}.tab{padding:8px 14px;border-radius:999px;background:#222;border:1px solid #333;cursor:pointer;font-size:13px}.tab.active{background:#ff8a00;color:#000;border-color:#ff8a00;font-weight:800}
-.section{display:none}.section.active{display:block}
-.order{background:#151515;border:1px solid #222;border-radius:12px;padding:12px;margin-bottom:8px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
-.item{background:#151515;border:1px solid #222;border-radius:10px;padding:10px}
-.qrgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
-.qrbox{background:#fff;color:#000;border-radius:12px;padding:12px;text-align:center}
-@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
-</style>
+<title>منصة المطعم PRO - Qaima</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0a0a0f;color:#fff;font-family:'Tajawal',system-ui;overflow-x:hidden}
+:root{--orange:#ff7a00;--orange2:#ff9a3d;--bg:#0a0a0f;--card:#15151d;--border:#23232f;--green:#22c55e;--blue:#3b82f6}
+.top{position:sticky;top:0;z-index:20;background:rgba(10,10,15,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.logo{display:flex;align-items:center;gap:10px}.logo .icon{width:36px;height:36px;background:linear-gradient(135deg,var(--orange),var(--orange2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.btn{border:0;padding:10px 16px;border-radius:12px;font-weight:800;cursor:pointer;font-family:inherit;transition:.2s}.btn-orange{background:linear-gradient(135deg,var(--orange),var(--orange2));color:#000}.btn-dark{background:var(--card);color:#fff;border:1px solid var(--border)}.btn:hover{transform:translateY(-1px)}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(600px at 20% 10%, rgba(255,122,0,.15), transparent), radial-gradient(600px at 80% 90%, rgba(59,130,246,.12), transparent)}
+.login-card{width:100%;max-width:400px;background:var(--card);border:1px solid var(--border);border-radius:24px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.login-card h2{margin:0 0 6px;font-size:22px;font-weight:900}.login-card p{margin:0;color:#888;font-size:13px;line-height:1.6}
+.field{margin-top:14px}.field label{font-size:12px;color:#aaa;display:block;margin-bottom:6px}.field input{width:100%;background:#0f0f15;border:1px solid var(--border);color:#fff;padding:13px 14px;border-radius:12px;outline:none;font-family:inherit;font-size:14px}.field input:focus{border-color:var(--orange)}
+.dash{max-width:1300px;margin:auto;padding:16px;display:none}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;position:relative;overflow:hidden}
+.stat::before{content:'';position:absolute;top:0;right:0;left:0;height:3px;background:linear-gradient(90deg,var(--orange),var(--orange2))}
+.stat h3{margin:0;font-size:11px;color:#888;letter-spacing:.5px}.stat .num{font-size:26px;font-weight:900;margin-top:6px}.stat .sub{font-size:11px;color:#666;margin-top:4px}
+.tabs{display:flex;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:6px;width:fit-content;margin-bottom:16px;flex-wrap:wrap}
+.tab{padding:9px 16px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;color:#888;transition:.2s}.tab.active{background:#fff;color:#000}
+.section{display:none}.section.active{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px}
+.order{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;transition:.2s}.order.new{border-color:var(--orange);box-shadow:0 0 0 1px rgba(255,122,0,.2)}
+.order .left{flex:1;min-width:240px}.order .right{display:flex;flex-direction:column;gap:8px;min-width:160px}
+.badge{display:inline-flex;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:800}.b-new{background:var(--orange);color:#000}.b-prep{background:#facc15;color:#000}.b-ready{background:var(--green);color:#000}.b-done{background:#333;color:#aaa}.b-cancel{background:#7f1d1d;color:#ffb4b4}
+.menu-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.menu-toolbar input, .menu-toolbar select{background:#0f0f15;border:1px solid var(--border);color:#fff;padding:10px 12px;border-radius:10px;font-family:inherit;font-size:13px}
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.menu-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:.2s}.menu-card:hover{border-color:#333;transform:translateY(-2px)}
+.menu-card .img{height:140px;background:linear-gradient(135deg,#1f1f2b,#15151d);display:flex;align-items:center;justify-content:center;font-size:32px;color:#444}
+.menu-card .body{padding:12px}.menu-card h4{margin:0;font-size:14px}.menu-card .meta{font-size:11px;color:#888;margin-top:4px}.menu-card .price{color:var(--orange);font-weight:900;margin-top:6px}
+.qr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.qr-card{background:#fff;color:#000;border-radius:20px;padding:14px;text-align:center;position:relative;overflow:hidden}.qr-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--orange),var(--orange2))}
+.qr-card .tname{font-weight:900;font-size:14px;margin-bottom:8px}
+.print-area{margin-top:20px}
+@media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}.top{padding:12px}}
+@media print{body{background:#fff;color:#000}.top,.tabs,.menu-toolbar,.btn,.btn-dark{display:none}.dash{display:block!important}.qr-grid{grid-template-columns:repeat(3,1fr)}}
+</style>
 </head>
 <body>
-<div class="top"><div><b>منصة المطعم 🍽️</b><div style="font-size:11px;color:#888" id="restInfo">دخول آمن برقم الهاتف والباسورد</div></div><div><a href="/" class="btn-d" style="text-decoration:none">🏠</a> <button class="btn-d" onclick="logout()" id="logoutBtn" style="display:none">خروج</button></div></div>
+<div class="top">
+  <div class="logo"><div class="icon">🍽️</div><div><div style="font-weight:900">منصة المطعم PRO</div><div style="font-size:11px;color:#888" id="restInfo">دخول آمن</div></div></div>
+  <div style="display:flex;gap:8px"><a href="/" class="btn btn-dark" style="text-decoration:none">🏠</a><button class="btn btn-dark" onclick="logout()" id="logoutBtn" style="display:none">خروج</button></div>
+</div>
 
-<div id="loginBox" class="login">
-  <h2>دخول صاحب المطعم</h2>
-  <p style="color:#888;font-size:13px">ادخل رقم الهاتف والباسورد اللي عطاهولك السوبر ادمين</p>
-  <input id="phone" placeholder="رقم الهاتف - 091...">
-  <input id="pass" type="password" placeholder="الباسورد">
-  <button class="btn" style="width:100%;margin-top:12px" onclick="login()">دخول 🚀</button>
-  <div style="margin-top:12px;font-size:12px;color:#666">مثال: 0911111111 / 1234</div>
+<div id="loginWrap" class="login-wrap">
+  <div class="login-card">
+    <div style="width:56px;height:56px;background:linear-gradient(135deg,var(--orange),var(--orange2));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:14px">🔐</div>
+    <h2>مرحبا بك في مطعمك</h2>
+    <p>ادخل رقم الهاتف والباسورد اللي عطاهولك السوبر ادمين باش تدير مطعمك بالكامل</p>
+    <div class="field"><label>رقم الهاتف</label><input id="phone" placeholder="091..."></div>
+    <div class="field"><label>الباسورد</label><input id="pass" type="password" placeholder="••••"></div>
+    <button class="btn btn-orange" style="width:100%;margin-top:16px;padding:13px" onclick="login()">دخول للوحة التحكم 🚀</button>
+    <div style="margin-top:12px;background:#0f0f15;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:11px;color:#666">تجربة: 0911111111 / 1234<br>0912222222 / 1234</div>
+  </div>
 </div>
 
 <div id="dash" class="dash">
   <div class="stats" id="stats"></div>
-  <div class="tabs"><div class="tab active" onclick="tab('orders')">📦 الطلبات الحية</div><div class="tab" onclick="tab('menu')">📋 إدارة المنيو</div><div class="tab" onclick="tab('qr')">🔳 QR الطاولات</div><div class="tab" onclick="tab('settings')">⚙️ الإعدادات</div></div>
+  <div class="tabs">
+    <div class="tab active" onclick="tab('orders')">📦 الطلبات الحية <span id="ordersBadge" style="background:var(--orange);color:#000;padding:2px 6px;border-radius:999px;font-size:10px;margin-right:4px;display:none">0</span></div>
+    <div class="tab" onclick="tab('menu')">📋 المنيو والأسعار</div>
+    <div class="tab" onclick="tab('qr')">🔳 طاولات & QR</div>
+    <div class="tab" onclick="tab('settings')">⚙️ الإعدادات والرابط</div>
+  </div>
 
-  <div id="sec-orders" class="section active"><div id="orders"></div></div>
+  <div id="sec-orders" class="section active">
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <select id="orderFilter" onchange="renderOrders()" style="background:var(--card);border:1px solid var(--border);color:#fff;padding:9px 12px;border-radius:10px"><option value="all">كل الطلبات</option><option value="جديد">جديد فقط 🆕</option><option value="قيد التحضير">قيد التحضير</option><option value="جاهز">جاهز</option></select>
+      <button class="btn btn-dark" onclick="loadAll()">🔄 تحديث</button>
+      <button class="btn btn-dark" onclick="toggleSound()" id="soundBtn">🔔 صوت: مفعل</button>
+    </div>
+    <div id="orders"></div>
+  </div>
+
   <div id="sec-menu" class="section">
-    <div style="background:#151515;border:1px solid #222;border-radius:12px;padding:12px;display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-      <input id="mName" placeholder="اسم الصنف"><input id="mPrice" type="number" placeholder="السعر" style="width:90px"><input id="mCat" placeholder="تصنيف" style="width:110px"><input id="mDesc" placeholder="وصف" style="flex:1"><button class="btn" onclick="addMenu()">+ إضافة</button>
+    <div class="card" style="margin-bottom:12px">
+      <div style="font-weight:800;margin-bottom:10px">إضافة صنف جديد للمنيو</div>
+      <div class="menu-toolbar">
+        <input id="mName" placeholder="اسم الصنف - بيتزا مارغريتا" style="flex:1;min-width:180px">
+        <input id="mPrice" type="number" placeholder="السعر 45" style="width:100px">
+        <input id="mCat" placeholder="التصنيف - بيتزا / برجر" style="width:130px">
+        <input id="mDesc" placeholder="وصف قصير" style="flex:1;min-width:200px">
+        <button class="btn btn-orange" onclick="addMenu()">+ إضافة</button>
+      </div>
+      <div style="font-size:11px;color:#666">نصيحة: استخدم تصنيفات واضحة: بيتزا، برجر، باستا، مقبلات، مشروبات</div>
     </div>
-    <div class="grid" id="menuGrid"></div>
+    <div class="menu-grid" id="menuGrid"></div>
   </div>
+
   <div id="sec-qr" class="section">
-    <div style="background:#151515;border:1px solid #222;border-radius:12px;padding:12px;margin-bottom:12px">
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">عدد الطاولات: <input id="tablesCount" type="number" style="width:80px" value="10"> <button class="btn-d" onclick="genQR()">توليد QR لكل الطاولات 🔳</button> <button class="btn-d" onclick="printQR()">🖨️ طباعة</button></div>
-      <div style="font-size:12px;color:#888;margin-top:8px">كل QR يفتح منيو مطعمك مع رقم الطاولة - الزبون يمسح ويطلب</div>
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <div><div style="font-weight:800">إدارة الطاولات وطباعة QR</div><div style="font-size:12px;color:#888;margin-top:4px">كل طاولة لها QR خاص - الزبون يمسح ويطلب ورقم الطاولة يطلع تلقائي</div></div>
+        <div style="display:flex;gap:8px;align-items:center"><span style="font-size:12px;color:#888">عدد الطاولات:</span><input id="tablesCount" type="number" value="10" style="width:70px;background:#0f0f15;border:1px solid var(--border);color:#fff;padding:8px;border-radius:8px"><button class="btn btn-orange" onclick="genQR()">توليد QR 🔳</button><button class="btn btn-dark" onclick="window.print()">🖨️ طباعة</button></div>
+      </div>
     </div>
-    <div class="qrgrid" id="qrGrid"></div>
+    <div class="qr-grid" id="qrGrid"></div>
   </div>
-  <div id="sec-settings" class="section"><div class="card"><div id="settingsBox"></div></div></div>
+
+  <div id="sec-settings" class="section">
+    <div class="card">
+      <div id="settingsBox"></div>
+      <div style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+        <div class="card" style="background:#0f0f15"><div style="font-weight:800">🔗 رابط الزبون العام (بدون طاولة)</div><div id="publicLink" style="font-size:12px;color:var(--orange);word-break:break-all;margin-top:8px"></div><button class="btn btn-dark" style="margin-top:8px" onclick="copyPublic()">نسخ الرابط</button></div>
+        <div class="card" style="background:#0f0f15"><div style="font-weight:800">📱 رابط فحص QR</div><div style="font-size:12px;color:#888;margin-top:4px">اعطيه للزبون يفتح الكاميرا ويمسح</div><div style="font-size:12px;color:var(--orange);margin-top:8px" id="qrLink"></div></div>
+      </div>
+    </div>
+  </div>
 </div>
 
+<audio id="ding" src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3"></audio>
+
 <script>
-let REST=null, MENU=[], ORDERS=[];
-const urlParams=new URLSearchParams(location.search);
+let REST=null, MENU=[], ORDERS=[], soundOn=true, lastOrderCount=0;
+function tab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelector(`[onclick="tab('${name}')"]`).classList.add('active');
+  document.getElementById('sec-'+name).classList.add('active');
+  if(name==='qr') genQR();
+}
 async function login(){
   const phone=document.getElementById('phone').value.trim(); const password=document.getElementById('pass').value.trim();
   if(!phone||!password) return alert('اكتب الهاتف والباسورد');
@@ -69,39 +134,72 @@ async function login(){
 }
 function logout(){ localStorage.removeItem('qaima_rest'); location.reload(); }
 function showDash(){
-  if(!REST){ const saved=localStorage.getItem('qaima_rest'); if(saved){ REST=JSON.parse(saved); } else return; }
-  document.getElementById('loginBox').style.display='none'; document.getElementById('dash').style.display='block'; document.getElementById('logoutBtn').style.display='inline-block';
-  document.getElementById('restInfo').textContent=REST.name+' - '+REST.ownerName+' - '+REST.phone+' - '+REST.status+' - '+REST.remainingDays+' يوم';
+  if(!REST){ const saved=localStorage.getItem('qaima_rest'); if(saved) REST=JSON.parse(saved); else return; }
+  document.getElementById('loginWrap').style.display='none'; document.getElementById('dash').style.display='block'; document.getElementById('logoutBtn').style.display='inline-block';
+  document.getElementById('restInfo').textContent=`${REST.name} • ${REST.ownerName||''} • ${REST.status} • ${REST.remainingDays} يوم متبقي`;
   loadAll();
+  setInterval(loadAll, 10000);
 }
 async function loadAll(){
   const [menu, orders]=await Promise.all([fetch('/api/restaurants/'+REST.id+'/menu').then(r=>r.json()), fetch('/api/orders?restaurant='+REST.id).then(r=>r.json())]);
-  MENU=menu; ORDERS=orders;
+  const newCount=orders.length;
+  if(newCount>lastOrderCount && lastOrderCount!==0 && soundOn){ try{ document.getElementById('ding').play(); }catch{} if(Notification && Notification.permission==='granted') new Notification('طلب جديد! 🍽️', {body: `طاولة ${orders[0]?.table||''} - ${orders[0]?.total||''} د.ل`}); }
+  lastOrderCount=newCount; MENU=menu; ORDERS=orders;
+  const today=orders.filter(o=>new Date(o.createdAt).toDateString()===new Date().toDateString());
   document.getElementById('stats').innerHTML=`
-    <div class="card"><h3>طلبات اليوم</h3><div class="num">${orders.filter(o=>new Date(o.createdAt).toDateString()===new Date().toDateString()).length}</div></div>
-    <div class="card"><h3>إجمالي الطلبات</h3><div class="num">${orders.length}</div></div>
-    <div class="card"><h3>مبيعات اليوم</h3><div class="num">${orders.filter(o=>new Date(o.createdAt).toDateString()===new Date().toDateString()).reduce((s,x)=>s+(x.total||0),0)} د.ل</div></div>
-    <div class="card"><h3>حالة الاشتراك</h3><div class="num" style="font-size:14px">${REST.status} - ${REST.remainingDays} يوم</div></div>
+    <div class="stat"><h3>طلبات اليوم</h3><div class="num">${today.length}</div><div class="sub">إجمالي ${orders.length}</div></div>
+    <div class="stat"><h3>مبيعات اليوم</h3><div class="num">${today.reduce((s,x)=>s+(x.total||0),0)} د.ل</div><div class="sub">من ${today.length} طلب</div></div>
+    <div class="stat"><h3>متوسط الطلب</h3><div class="num">${orders.length?Math.round(orders.reduce((s,x)=>s+(x.total||0),0)/orders.length):0} د.ل</div><div class="sub">لكل طلب</div></div>
+    <div class="stat"><h3>الاشتراك</h3><div class="num" style="font-size:16px">${REST.status}</div><div class="sub">${REST.remainingDays} يوم • ${REST.package}</div></div>
   `;
-  document.getElementById('orders').innerHTML=orders.map(o=>`
-    <div class="order">
-      <div style="display:flex;justify-content:space-between"><b>طاولة ${o.table||'-'} - ${o.customerName||'زبون'}</b><span style="font-size:11px;color:#888">${new Date(o.createdAt).toLocaleString('ar-LY')}</span></div>
-      <div style="font-size:12px;color:#aaa;margin:6px 0">${(o.items||[]).map(i=>`${i.name} x${i.qty}`).join('، ')} - <b>${o.total} د.ل</b></div>
-      <div style="font-size:11px;color:#888">${o.customerPhone||''} - ${o.address||''}</div>
-      <div style="display:flex;gap:6px;margin-top:8px"><select onchange="updateOrder('${o.id}', this.value)" style="padding:6px;border-radius:6px;background:#222;color:#fff;border:1px solid #333"><option ${o.status==='جديد'?'selected':''}>جديد</option><option ${o.status==='قيد التحضير'?'selected':''}>قيد التحضير</option><option ${o.status==='جاهز'?'selected':''}>جاهز</option><option ${o.status==='تم التوصيل'?'selected':''}>تم التوصيل</option><option ${o.status==='ملغي'?'selected':''}>ملغي</option></select></div>
-    </div>`).join('')||'<div style="color:#666;text-align:center;padding:20px">لا يوجد طلبات بعد - شارك QR مع الزبائن</div>';
-  document.getElementById('menuGrid').innerHTML=MENU.map(i=>`<div class="item"><b>${i.name}</b><div style="font-size:11px;color:#888">${i.category} - ${i.desc||''}</div><div style="color:#ff8a00;font-weight:800;margin-top:4px">${i.price} د.ل</div><div style="display:flex;gap:6px;margin-top:8px"><button class="btn-d" onclick="delMenu('${i.id}')">حذف</button><button class="btn-d" onclick="toggleMenu('${i.id}')">${i.available===false?'تفعيل':'إخفاء'}</button></div></div>`).join('');
-  document.getElementById('settingsBox').innerHTML=`
-    <b>${REST.name}</b><div style="font-size:12px;color:#888;margin-top:6px">الشخص: ${REST.ownerName} - الهاتف: ${REST.phone} - الباسورد: ${REST.password}</div>
-    <div style="font-size:12px;color:#888;margin-top:6px">الباقة: ${REST.package} - الانتهاء: ${REST.expiry} - متبقي: ${REST.remainingDays} يوم</div>
-    <div style="margin-top:10px"><b>رابط الزبون العام:</b><br><span style="color:#ff8a00;font-size:12px">${location.origin}/menu/${REST.id}</span> <button class="btn-d" onclick="navigator.clipboard.writeText(location.origin+'/menu/${REST.id}')">نسخ</button></div>
-    <div style="margin-top:8px"><b>رابط QR مع طاولة:</b><br><span style="color:#ff8a00;font-size:12px">${location.origin}/c/${REST.id}/1</span></div>
-  `;
-  document.getElementById('tablesCount').value=REST.tables||10;
+  document.getElementById('ordersBadge').textContent=orders.filter(o=>o.status==='جديد').length; document.getElementById('ordersBadge').style.display=orders.filter(o=>o.status==='جديد').length?'inline-block':'none';
+  renderOrders(); renderMenu(); renderSettings();
 }
-function tab(name){ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.section').forEach(s=>s.classList.remove('active')); document.querySelector(`[onclick="tab('${name}')"]`).classList.add('active'); document.getElementById('sec-'+name).classList.add('active'); if(name==='qr') genQR(); }
+function renderOrders(){
+  const filter=document.getElementById('orderFilter')?.value||'all';
+  let list=[...ORDERS]; if(filter!=='all') list=list.filter(o=>o.status===filter);
+  document.getElementById('orders').innerHTML=list.map(o=>{
+    const isNew=o.status==='جديد';
+    const badgeClass=o.status==='جديد'?'b-new':o.status==='قيد التحضير'?'b-prep':o.status==='جاهز'?'b-ready':o.status==='تم التوصيل'?'b-done':'b-cancel';
+    return `<div class="order ${isNew?'new':''}">
+      <div class="left">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span style="background:#fff;color:#000;padding:4px 10px;border-radius:999px;font-weight:900;font-size:12px">طاولة ${o.table||'-'}</span><span class="badge ${badgeClass}">${o.status}</span><span style="font-size:11px;color:#888">${new Date(o.createdAt).toLocaleString('ar-LY')}</span></div>
+        <div style="margin-top:8px;font-weight:700">${o.customerName||'زبون'} - ${o.customerPhone||''}</div>
+        <div style="font-size:13px;color:#aaa;margin-top:6px;line-height:1.6">${(o.items||[]).map(i=>`• ${i.name} <b>x${i.qty}</b> - ${i.price*i.qty} د.ل`).join('<br>')}</div>
+        <div style="margin-top:8px;font-weight:900;color:var(--orange)">${o.total} د.ل</div>
+        ${o.notes?`<div style="font-size:11px;color:#888;margin-top:4px">📝 ${o.notes}</div>`:''}
+      </div>
+      <div class="right">
+        <select onchange="updateOrder('${o.id}', this.value)" style="background:#0f0f15;border:1px solid var(--border);color:#fff;padding:9px;border-radius:10px">
+          <option ${o.status==='جديد'?'selected':''}>جديد</option><option ${o.status==='قيد التحضير'?'selected':''}>قيد التحضير</option><option ${o.status==='جاهز'?'selected':''}>جاهز</option><option ${o.status==='تم التوصيل'?'selected':''}>تم التوصيل</option><option ${o.status==='ملغي'?'selected':''}>ملغي</option>
+        </select>
+        <button class="btn btn-dark" onclick="printOrder('${o.id}')">🖨️ طباعة</button>
+      </div>
+    </div>`;
+  }).join('')||'<div class="card" style="text-align:center;color:#666;padding:30px">لا يوجد طلبات في هذا الفلتر - شارك QR الطاولات مع الزبائن<br><br><span style="font-size:32px">🍽️</span></div>';
+}
+function renderMenu(){
+  document.getElementById('menuGrid').innerHTML=MENU.map(i=>`
+    <div class="menu-card" style="${i.available===false?'opacity:.5':''}">
+      <div class="img">${i.category==='بيتزا'?'🍕':i.category==='برجر'?'🍔':i.category==='باستا'?'🍝':'🍽️'}</div>
+      <div class="body">
+        <h4>${i.name} ${i.available===false?'<span style="font-size:10px;background:#333;color:#fff;padding:2px 6px;border-radius:999px">مخفي</span>':''}</h4>
+        <div class="meta">${i.category||'عام'} • ${i.desc||'بدون وصف'}</div>
+        <div class="price">${i.price} د.ل</div>
+        <div style="display:flex;gap:6px;margin-top:10px"><button class="btn btn-dark" style="flex:1;padding:7px;font-size:12px" onclick="delMenu('${i.id}')">🗑️ حذف</button><button class="btn btn-dark" style="flex:1;padding:7px;font-size:12px" onclick="toggleMenu('${i.id}')">${i.available===false?'👁️ إظهار':'🙈 إخفاء'}</button></div>
+      </div>
+    </div>
+  `).join('')||'<div class="card" style="grid-column:1/-1;text-align:center;color:#666">لا يوجد أصناف - أضف أول صنف فوق</div>';
+}
+function renderSettings(){
+  document.getElementById('settingsBox').innerHTML=`
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><div style="width:56px;height:56px;background:linear-gradient(135deg,var(--orange),var(--orange2));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px">🍽️</div><div><div style="font-weight:900;font-size:18px">${REST.name}</div><div style="font-size:12px;color:#888">${REST.ownerName||''} • ${REST.phone} • باسورد: ${REST.password}</div><div style="font-size:11px;color:#666;margin-top:4px">الباقة: ${REST.package} • ينتهي: ${REST.expiry} • متبقي ${REST.remainingDays} يوم • ${REST.tables||10} طاولة</div></div></div>
+  `;
+  document.getElementById('publicLink').textContent=location.origin+'/menu/'+REST.id;
+  document.getElementById('qrLink').textContent=location.origin+'/qr';
+}
 async function addMenu(){ const name=document.getElementById('mName').value.trim(); const price=Number(document.getElementById('mPrice').value); const category=document.getElementById('mCat').value.trim()||'عام'; const desc=document.getElementById('mDesc').value.trim(); if(!name||!price) return alert('اكتب الاسم والسعر'); await fetch('/api/restaurants/'+REST.id+'/menu',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,price,category,desc})}); document.getElementById('mName').value=''; document.getElementById('mPrice').value=''; loadAll(); }
-async function delMenu(id){ if(!confirm('حذف؟')) return; await fetch('/api/restaurants/'+REST.id+'/menu/'+id,{method:'DELETE'}); loadAll(); }
+async function delMenu(id){ if(!confirm('حذف الصنف؟')) return; await fetch('/api/restaurants/'+REST.id+'/menu/'+id,{method:'DELETE'}); loadAll(); }
 async function toggleMenu(id){ const it=MENU.find(x=>x.id===id); await fetch('/api/restaurants/'+REST.id+'/menu/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({available:!(it.available!==false)})}); loadAll(); }
 async function updateOrder(id,status){ await fetch('/api/orders/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})}); loadAll(); }
 function genQR(){
@@ -109,17 +207,23 @@ function genQR(){
   const grid=document.getElementById('qrGrid'); grid.innerHTML='';
   for(let i=1;i<=count;i++){
     const url=`${location.origin}/c/${REST.id}/${i}`;
-    const div=document.createElement('div'); div.className='qrbox';
-    div.innerHTML=`<div style="font-weight:900;margin-bottom:6px">طاولة ${i}</div><div id="q${i}"></div><div style="font-size:10px;margin-top:6px;word-break:break-all">${url}</div>`;
+    const div=document.createElement('div'); div.className='qr-card';
+    div.innerHTML=`<div class="tname">${REST.name}<br>طاولة ${i}</div><div id="q${i}" style="display:flex;justify-content:center;margin:8px 0"></div><div style="font-size:9px;color:#666;word-break:break-all">${url}</div><div style="font-size:10px;margin-top:6px;color:#888">امسح للطلب 📱</div>`;
     grid.appendChild(div);
-    setTimeout(()=>{ new QRCode(document.getElementById('q'+i), {text:url, width:120, height:120}); },100);
+    setTimeout(()=>{ new QRCode(document.getElementById('q'+i), {text:url, width:130, height:130, colorDark:"#000", colorLight:"#fff"}); },80);
   }
-  // حفظ عدد الطاولات
   fetch('/api/restaurants/'+REST.id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({tables:count})});
 }
-function printQR(){ window.print(); }
-// auto login if saved or rest param
-(function(){ const restParam=new URLSearchParams(location.search).get('rest'); if(restParam){ fetch('/api/restaurants/'+restParam).then(r=>r.json()).then(rst=>{ if(rst.phone){ document.getElementById('phone').value=rst.phone; document.getElementById('pass').value=rst.password; }}); } if(localStorage.getItem('qaima_rest')){ REST=JSON.parse(localStorage.getItem('qaima_rest')); showDash(); } })();
+function copyPublic(){ navigator.clipboard.writeText(location.origin+'/menu/'+REST.id); alert('تم النسخ'); }
+function toggleSound(){ soundOn=!soundOn; document.getElementById('soundBtn').textContent=soundOn?'🔔 صوت: مفعل':'🔕 صوت: متوقف'; }
+function printOrder(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; const w=window.open('','_blank'); w.document.write(`<html dir="rtl"><body style="font-family:system-ui;padding:20px"><h2>${REST.name} - طاولة ${o.table}</h2><p>${o.customerName} - ${o.customerPhone}</p><hr>${o.items.map(i=>`${i.name} x${i.qty} - ${i.price*i.qty} د.ل`).join('<br>')}<hr><b>الإجمالي: ${o.total} د.ل</b><br><small>${new Date(o.createdAt).toLocaleString()}</small></body></html>`); w.document.close(); w.print(); }
+(function(){
+  if(Notification && Notification.permission!=='granted' && Notification.permission!=='denied'){ Notification.requestPermission(); }
+  const saved=localStorage.getItem('qaima_rest');
+  if(saved){ REST=JSON.parse(saved); showDash(); }
+  const restParam=new URLSearchParams(location.search).get('rest');
+  if(restParam && !REST){ fetch('/api/restaurants/'+restParam).then(r=>r.json()).then(rst=>{ if(rst.phone){ document.getElementById('phone').value=rst.phone; document.getElementById('pass').value=rst.password; } }); }
+})();
 </script>
 </body>
 </html>
