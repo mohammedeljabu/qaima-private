@@ -23,31 +23,25 @@ if (KV_URL && KV_TOKEN) {
     const { Redis } = require('@upstash/redis');
     kv = new Redis({ url: KV_URL, token: KV_TOKEN });
     kvMode = 'upstash-kv';
-  } catch(e){}
+    console.log('✅ KV متصل - وضع الاستعادة');
+  } catch(e){ console.error(e); }
 }
+
+const DEFAULT_RESTAURANTS = [
+  { id: 'rest_1', name: 'سفيرة - قرقارش', phone:'0912345678', package: 'الاحترافية - 199 د.ل', price: 199, originalPrice:199, status: 'نشطة', expiry: '2026-10-15', remainingDays: 32, mrr: 199, notes:'تمت الاستعادة' },
+  { id: 'rest_2', name: 'كازا باستا - بن عاشور', phone:'0923456789', package: 'البداية - 99 د.ل', price: 99, originalPrice:99, status: 'تجربة مجانية', expiry: '2026-09-16', remainingDays: 3, mrr: 0, isTrial:true, freeMonth:true },
+  { id: 'rest_3', name: 'برجر هاوس - السياحية', phone:'0934567890', package: 'المؤسسي - 399 د.ل', price: 399, originalPrice:399, status: 'نشطة', expiry: '2026-12-01', remainingDays: 79, mrr: 399 },
+];
 
 const DEFAULT_MENUS = {
   'rest_1': [
-    {id:'m1', name:'بيتزا مارغريتا', price:45, category:'بيتزا', desc:'صلصة طماطم، جبنة موزاريلا طازجة، ريحان', available:true},
-    {id:'m2', name:'بيتزا بيبروني', price:55, category:'بيتزا', desc:'بيبروني حار، جبنة إضافية', available:true},
-    {id:'m3', name:'برجر كلاسيك', price:35, category:'برجر', desc:'لحم أنجوس، خس، طماطم، صوص خاص', available:true},
-    {id:'m4', name:'باستا ألفريدو', price:48, category:'باستا', desc:'كريمة، دجاج، فطر، بارميزان', available:true},
+    {id:'m1', name:'بيتزا مارغريتا', price:45, category:'بيتزا', desc:'صلصة طماطم، موزاريلا، ريحان', available:true},
+    {id:'m2', name:'بيتزا بيبروني', price:55, category:'بيتزا', desc:'بيبروني حار', available:true},
+    {id:'m3', name:'برجر كلاسيك', price:35, category:'برجر', desc:'لحم أنجوس', available:true},
   ],
-  'rest_2': [
-    {id:'m5', name:'سباغيتي بولونيز', price:38, category:'باستا', desc:'صلصة لحم، طماطم، ريحان', available:true},
-    {id:'m6', name:'لازانيا', price:42, category:'باستا', desc:'طبقات لحم وجبنة', available:true},
-  ],
-  'rest_3': [
-    {id:'m7', name:'برجر دبل تشيز', price:52, category:'برجر', desc:'قطعتين لحم، دبل تشيز', available:true},
-    {id:'m8', name:'بطاطا مقلية', price:15, category:'مقبلات', desc:'مقرمشة وذهبية', available:true},
-  ]
+  'rest_2': [{id:'m5', name:'سباغيتي', price:38, category:'باستا', desc:'', available:true}],
+  'rest_3': [{id:'m7', name:'برجر دبل', price:52, category:'برجر', desc:'', available:true}]
 };
-
-const DEFAULT_RESTAURANTS = [
-  { id: 'rest_1', name: 'سفيرة - قرقارش', phone:'0912345678', package: 'الاحترافية - 199 د.ل', price: 199, originalPrice:199, status: 'نشطة', expiry: '2026-10-15', remainingDays: 32, mrr: 199 },
-  { id: 'rest_2', name: 'كازا باستا - بن عاشور', phone:'0923456789', package: 'البداية - 99 د.ل', price: 99, originalPrice:99, status: 'تجربة مجانية', expiry: '2026-09-16', remainingDays: 3, mrr: 0, isTrial:true },
-  { id: 'rest_3', name: 'برجر هاوس - السياحية', phone:'0934567890', package: 'المؤسسي - 399 د.ل', price: 399, originalPrice:399, status: 'نشطة', expiry: '2026-12-01', remainingDays: 79, mrr: 399 },
-];
 
 let memoryCache = { restaurants: DEFAULT_RESTAURANTS, orders: [], menus: DEFAULT_MENUS };
 
@@ -56,15 +50,82 @@ function calcRemaining(expiryStr){
 }
 
 async function getAllData(){
-  if(kv){ try{ const d=await kv.get('qaima_full_data'); if(d&&d.restaurants){ memoryCache=d; if(!memoryCache.menus) memoryCache.menus=DEFAULT_MENUS; memoryCache.restaurants=memoryCache.restaurants.map(r=>({...r,remainingDays:calcRemaining(r.expiry)})); return memoryCache; } }catch(e){} }
-  try{ if(fs.existsSync(path.join(__dirname,'data.json'))){ const d=JSON.parse(fs.readFileSync(path.join(__dirname,'data.json'),'utf8')); if(Array.isArray(d)) memoryCache.restaurants=d; else if(d.restaurants) memoryCache=d; if(!memoryCache.menus) memoryCache.menus=DEFAULT_MENUS; } }catch{}
-  memoryCache.restaurants=memoryCache.restaurants.map(r=>({...r,remainingDays:calcRemaining(r.expiry)}));
+  // محاولة استرجاع من KV مع حماية من الفارغ
+  if(kv){
+    try{
+      const d = await kv.get('qaima_full_data');
+      console.log('KV qaima_full_data:', d ? `found ${d.restaurants?.length||0} restaurants` : 'null');
+      if(d && d.restaurants && d.restaurants.length>0){
+        memoryCache = d;
+        if(!memoryCache.menus) memoryCache.menus = DEFAULT_MENUS;
+        if(!memoryCache.orders) memoryCache.orders = [];
+        memoryCache.restaurants = memoryCache.restaurants.map(r=>({...r, remainingDays: calcRemaining(r.expiry)}));
+        return memoryCache;
+      }
+      // جرب المفاتيح القديمة
+      const oldRest = await kv.get('qaima_restaurants');
+      if(oldRest && oldRest.length>0){
+        console.log('Found old qaima_restaurants', oldRest.length);
+        memoryCache.restaurants = oldRest.map(r=>({...r, remainingDays: calcRemaining(r.expiry||'2026-12-01')}));
+        if(!memoryCache.menus) memoryCache.menus = DEFAULT_MENUS;
+        await saveAllData(memoryCache);
+        return memoryCache;
+      }
+    }catch(e){ console.error('KV error', e); }
+  }
+  // ملف محلي
+  try{
+    if(fs.existsSync(path.join(__dirname,'data.json'))){
+      const d=JSON.parse(fs.readFileSync(path.join(__dirname,'data.json'),'utf8'));
+      if(Array.isArray(d) && d.length>0){ memoryCache.restaurants=d; }
+      else if(d.restaurants && d.restaurants.length>0){ memoryCache=d; }
+    }
+  }catch(e){}
+  // لو لا يزال فارغ - رجع الافتراضي وانقذه
+  if(!memoryCache.restaurants || memoryCache.restaurants.length===0){
+    console.log('⚠️ لا يوجد بيانات - استعادة الافتراضي');
+    memoryCache.restaurants = DEFAULT_RESTAURANTS;
+    memoryCache.menus = DEFAULT_MENUS;
+    await saveAllData(memoryCache);
+  }
+  memoryCache.restaurants = memoryCache.restaurants.map(r=>({...r, remainingDays: calcRemaining(r.expiry)}));
   return memoryCache;
 }
-async function saveAllData(data){ memoryCache=data; if(kv){ try{ await kv.set('qaima_full_data', data); }catch(e){} } try{ fs.writeFileSync(path.join(__dirname,'data.json'), JSON.stringify(data,null,2)); }catch(e){} }
 
-// --- APIs ---
-app.get('/api/health', async (req,res)=>{ const d=await getAllData(); res.json({ok:true,hasKV:!!kv,mode:kvMode,restaurants:d.restaurants.length}); });
+async function saveAllData(data){
+  memoryCache = data;
+  // لا تحفظ أبدا بيانات فارغة!
+  if(!data.restaurants || data.restaurants.length===0){
+    console.log('⛔ منع حفظ بيانات فارغة!');
+    return;
+  }
+  if(kv){
+    try{ await kv.set('qaima_full_data', data); console.log('✅ تم الحفظ في KV', data.restaurants.length); }catch(e){ console.error(e); }
+  }
+  try{ fs.writeFileSync(path.join(__dirname,'data.json'), JSON.stringify(data,null,2)); }catch(e){}
+}
+
+// APIs
+app.get('/api/health', async (req,res)=>{ const d=await getAllData(); res.json({ok:true,hasKV:!!kv,mode:kvMode,restaurants:d.restaurants.length,menus:Object.keys(d.menus||{}).length}); });
+
+app.get('/api/debug', async (req,res)=>{
+  let kvInfo={};
+  if(kv){
+    try{
+      const full=await kv.get('qaima_full_data');
+      const old=await kv.get('qaima_restaurants');
+      kvInfo={has_full:!!full, full_count:full?.restaurants?.length||0, has_old:!!old, old_count:old?.length||0, keys: Object.keys(full||{}).slice(0,10)};
+    }catch(e){ kvInfo={error:e.message}; }
+  }
+  res.json({kvMode, hasKV:!!kv, memory:memoryCache.restaurants.length, kvInfo});
+});
+
+app.get('/api/restore', async (req,res)=>{
+  memoryCache = { restaurants: DEFAULT_RESTAURANTS, orders: [], menus: DEFAULT_MENUS };
+  await saveAllData(memoryCache);
+  res.json({ok:true, restored: memoryCache.restaurants.length, message:'تمت الاستعادة - سفيرة، كازا باستا، برجر هاوس رجعو'});
+});
+
 app.get('/api/data', async (req,res)=> res.json(await getAllData()));
 app.get('/api/restaurants', async (req,res)=>{ const d=await getAllData(); res.json(d.restaurants); });
 app.get('/api/restaurants/:id', async (req,res)=>{ const d=await getAllData(); const r=d.restaurants.find(x=>x.id===req.params.id); if(!r) return res.status(404).json({error:'not found'}); res.json(r); });
@@ -84,8 +145,8 @@ app.post('/api/restaurants/:id/toggle', async (req,res)=>{ const data=await getA
 app.delete('/api/restaurants/:id', async (req,res)=>{ const data=await getAllData(); data.restaurants=data.restaurants.filter(x=>x.id!==req.params.id); if(data.menus) delete data.menus[req.params.id]; await saveAllData(data); res.json({ok:true}); });
 app.get('/api/stats', async (req,res)=>{ const d=await getAllData(); const rests=d.restaurants; const active=rests.filter(r=>r.status==='نشطة').length; const trial=rests.filter(r=>r.status?.includes('تجربة')).length; const stopped=rests.filter(r=>r.status==='موقوفة').length; const expired=rests.filter(r=>r.status?.includes('منتهي')||r.remainingDays===0).length; const mrr=rests.filter(r=>r.status==='نشطة').reduce((s,r)=>s+(r.mrr||0),0); res.json({active,trial,stopped,expired,mrr,total:rests.length}); });
 
-// Menus APIs
-app.get('/api/restaurants/:id/menu', async (req,res)=>{ const data=await getAllData(); const menu=(data.menus&&data.menus[req.params.id])||[]; res.json(menu); });
+// Menus
+app.get('/api/restaurants/:id/menu', async (req,res)=>{ const data=await getAllData(); res.json((data.menus&&data.menus[req.params.id])||[]); });
 app.post('/api/restaurants/:id/menu', async (req,res)=>{ const data=await getAllData(); if(!data.menus) data.menus={}; if(!data.menus[req.params.id]) data.menus[req.params.id]=[]; const item={id:'item_'+Date.now(),...req.body,available:true}; data.menus[req.params.id].push(item); await saveAllData(data); res.json(item); });
 app.put('/api/restaurants/:id/menu/:itemId', async (req,res)=>{ const data=await getAllData(); const menu=data.menus[req.params.id]||[]; const idx=menu.findIndex(x=>x.id===req.params.itemId); if(idx===-1) return res.status(404).json({}); menu[idx]={...menu[idx],...req.body}; await saveAllData(data); res.json(menu[idx]); });
 app.delete('/api/restaurants/:id/menu/:itemId', async (req,res)=>{ const data=await getAllData(); if(data.menus&&data.menus[req.params.id]) data.menus[req.params.id]=data.menus[req.params.id].filter(x=>x.id!==req.params.itemId); await saveAllData(data); res.json({ok:true}); });
@@ -93,13 +154,10 @@ app.delete('/api/restaurants/:id/menu/:itemId', async (req,res)=>{ const data=aw
 // Orders
 app.get('/api/orders', async (req,res)=>{ const d=await getAllData(); let orders=d.orders||[]; if(req.query.restaurant) orders=orders.filter(o=>o.restaurantId===req.query.restaurant); res.json(orders); });
 app.post('/api/orders', async (req,res)=>{ const data=await getAllData(); const order={id:'ord_'+Date.now(),...req.body,createdAt:new Date().toISOString(),status:'جديد'}; data.orders=data.orders||[]; data.orders.push(order); await saveAllData(data); res.json(order); });
-app.put('/api/orders/:id', async (req,res)=>{ const data=await getAllData(); const idx=data.orders.findIndex(o=>o.id===req.params.id); if(idx===-1) return res.status(404).json({}); data.orders[idx]={...data.orders[idx],...req.body}; await saveAllData(data); res.json(data.orders[idx]); });
 
-// Public pages
 app.get('/menu/:id', (req,res)=> res.sendFile(path.join(__dirname,'public','menu.html')));
 app.get('/manage/:id', (req,res)=> res.sendFile(path.join(__dirname,'public','manage-menu.html')));
-app.get('/admin', (req,res)=> res.sendFile(path.join(__dirname,'public','index.html')));
 app.get('/', (req,res)=> res.sendFile(path.join(__dirname,'public','index.html')));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, ()=> console.log('Qaima full system running',PORT,kvMode));
+app.listen(PORT, ()=> console.log('RESTORE MODE',PORT));

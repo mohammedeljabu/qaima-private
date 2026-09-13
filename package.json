@@ -1,6 +1,6 @@
 {
   "name": "qaima-private",
-  "version": "6.0.0",
+  "version": "6.1.0",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
