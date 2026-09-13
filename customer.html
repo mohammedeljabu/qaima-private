@@ -1,0 +1,123 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>منيو المطعم</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:'Tajawal',system-ui;background:#fdf8f0;color:#1a1a1a}
+:root{--orange:#ff7a00;--orange2:#ff9a3d;--bg:#fdf8f0}
+.header{position:sticky;top:0;z-index:10;background:rgba(10,10,15,.92);backdrop-filter:blur(12px);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+.header .rest{font-weight:900;font-size:18px}.header .table{background:#fff;color:#000;padding:6px 12px;border-radius:999px;font-weight:800;font-size:12px}
+.cats{position:sticky;top:58px;z-index:9;background:rgba(253,248,240,.9);backdrop-filter:blur(10px);display:flex;gap:8px;padding:10px 12px;overflow:auto;border-bottom:1px solid #f0e6d6}
+.cat{padding:8px 14px;border-radius:999px;background:#fff;border:1px solid #f0e6d6;white-space:nowrap;cursor:pointer;font-size:13px;font-weight:700;color:#666;transition:.2s}.cat.active{background:linear-gradient(135deg,var(--orange),var(--orange2));color:#000;border-color:var(--orange)}
+.hero{max-width:1100px;margin:0 auto;padding:12px;display:flex;gap:10px;align-items:center}
+.hero .icon{width:48px;height:48px;background:linear-gradient(135deg,var(--orange),var(--orange2));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.menu{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;padding:12px;max-width:1100px;margin:auto}
+.item{background:#fff;border:1px solid #f0e6d6;border-radius:20px;padding:12px;display:flex;gap:12px;transition:.2s;position:relative;overflow:hidden}
+.item:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.08);border-color:#e8ddd0}
+.item .img{width:72px;height:72px;border-radius:16px;background:linear-gradient(135deg,#fdf0e0,#f7e6cc);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.item .body{flex:1}
+.item h3{margin:0;font-size:15px;font-weight:800}.item .desc{font-size:12px;color:#888;margin-top:3px;line-height:1.5}.item .price{font-weight:900;color:var(--orange);margin-top:6px;font-size:15px}
+.add{margin-top:8px;background:#0a0a0f;color:#fff;border:0;padding:8px 14px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:800;font-family:inherit;transition:.2s}.add:hover{background:var(--orange);color:#000}
+.cart{position:fixed;bottom:0;left:0;right:0;background:#0a0a0f;color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;z-index:20;transform:translateY(100%);transition:.35s;border-top:1px solid #222}
+.cart.show{transform:translateY(0)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:16px;z-index:30}.modal.show{display:flex}
+.box{background:#fff;border-radius:24px;padding:20px;max-width:420px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+input,textarea{width:100%;padding:12px 14px;border:1px solid #f0e6d6;border-radius:12px;margin-top:8px;font-family:inherit;outline:none;background:#fffdf8}
+input:focus,textarea:focus{border-color:var(--orange)}
+.btn{border:0;padding:12px 16px;border-radius:12px;font-weight:800;cursor:pointer;font-family:inherit}.btn-orange{background:linear-gradient(135deg,var(--orange),var(--orange2));color:#000}.btn-dark{background:#0a0a0f;color:#fff}
+.qty{display:inline-flex;align-items:center;gap:8px;background:#0a0a0f;color:#fff;border-radius:999px;padding:4px 8px;margin-top:6px}
+.qty button{background:rgba(255,255,255,.15);border:0;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="header">
+  <div style="display:flex;gap:10px;align-items:center"><div style="width:36px;height:36px;background:linear-gradient(135deg,#ff7a00,#ff9a3d);border-radius:10px;display:flex;align-items:center;justify-content:center">🍽️</div><div><div class="rest" id="restName">...</div><div style="font-size:11px;color:#aaa" id="restStatus">جاري التحميل...</div></div></div>
+  <div class="table">طاولة <span id="tableNum">-</span></div>
+</div>
+
+<div class="hero">
+  <div class="icon">🔥</div>
+  <div><div style="font-weight:800">منيو اليوم</div><div style="font-size:12px;color:#888" id="heroSub">اختر طلبك وسيصلك على طاولتك</div></div>
+</div>
+
+<div class="cats" id="cats"></div>
+<div class="menu" id="menu"></div>
+
+<div class="cart" id="cart">
+  <div><b id="cartCount">0</b> منتج • <b id="cartTotal">0 د.ل</b> • طاولة <span id="cartTable">-</span></div>
+  <button onclick="openCheckout()" style="background:linear-gradient(135deg,#ff7a00,#ff9a3d);color:#000;border:0;padding:10px 18px;border-radius:12px;font-weight:900;cursor:pointer;font-family:inherit">إتمام الطلب 🛒</button>
+</div>
+
+<div id="checkoutModal" class="modal"><div class="box">
+  <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">تأكيد الطلب</h3><span style="background:#0a0a0f;color:#fff;padding:4px 10px;border-radius:999px;font-size:12px">طاولة <span id="cTable"></span></span></div>
+  <div id="checkoutItems" style="font-size:13px;color:#555;margin:12px 0;line-height:1.7;background:#fdf8f0;border-radius:12px;padding:12px"></div>
+  <input id="cName" placeholder="اسمك - مثلا أحمد">
+  <input id="cPhone" placeholder="رقم هاتفك - 091...">
+  <textarea id="cNotes" placeholder="ملاحظات للمطبخ (اختياري)" rows="2"></textarea>
+  <div style="display:flex;gap:8px;margin-top:14px"><button onclick="submitOrder()" class="btn btn-orange" style="flex:1">تأكيد الطلب ✅</button><button onclick="closeCheckout()" class="btn btn-dark" style="flex:1">إلغاء</button></div>
+  <div style="font-size:11px;color:#888;text-align:center;margin-top:10px">سيصلك الطلب على طاولتك مباشرة</div>
+</div></div>
+
+<div id="successModal" class="modal"><div class="box" style="text-align:center">
+  <div style="width:64px;height:64px;background:linear-gradient(135deg,#22c55e,#16a34a);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 12px">✓</div>
+  <h2 style="margin:0">تم استلام طلبك!</h2>
+  <p style="font-size:13px;color:#666;margin-top:6px">رقم الطلب: <span id="orderId" style="font-weight:800;color:#000"></span></p>
+  <p style="font-size:13px;color:#666">سيصلك على طاولة <b id="sTable"></b> خلال دقائق</p>
+  <div style="margin-top:16px;background:#fdf8f0;border-radius:12px;padding:12px;font-size:12px;color:#888">يمكنك طلب إضافات بنفس الطريقة - امسح QR مرة أخرى</div>
+  <button onclick="location.reload()" style="margin-top:16px;background:#0a0a0f;color:#fff;border:0;padding:10px 18px;border-radius:12px;cursor:pointer;font-family:inherit">طلب جديد ➕</button>
+</div></div>
+
+<script>
+const parts=location.pathname.split('/').filter(Boolean);
+let rid=null, table='1';
+if(parts[0]==='c'){ rid=parts[1]; table=parts[2]||'1'; } else if(parts[0]==='menu'){ rid=parts[1]; table=new URLSearchParams(location.search).get('table')||'1'; }
+let REST=null, MENU=[], CART=[], activeCat='الكل';
+async function load(){
+  if(!rid){ document.body.innerHTML='رابط غير صحيح'; return; }
+  const [r,m]=await Promise.all([fetch('/api/restaurants/'+rid).then(x=>x.json()), fetch('/api/restaurants/'+rid+'/menu').then(x=>x.json())]);
+  if(r.error){ document.body.innerHTML='<div style="padding:40px;text-align:center">المطعم غير موجود</div>'; return; }
+  REST=r; MENU=m;
+  document.getElementById('restName').textContent=r.name;
+  document.getElementById('restStatus').textContent=(r.status==='نشطة'?'🟢 مفتوح الآن • ':'⏸️ ')+(r.ownerName||'');
+  document.getElementById('tableNum').textContent=table; document.getElementById('cartTable').textContent=table; document.getElementById('cTable').textContent=table; document.getElementById('sTable').textContent=table;
+  document.getElementById('heroSub').textContent=`${m.length} صنف متاح • اختر واطلب`;
+  const cats=['الكل',...new Set(m.map(x=>x.category))];
+  document.getElementById('cats').innerHTML=cats.map(c=>`<div class="cat ${c===activeCat?'active':''}" onclick="setCat('${c}')">${c}</div>`).join('');
+  render();
+}
+function setCat(c){activeCat=c; document.querySelectorAll('.cat').forEach(el=>el.classList.toggle('active',el.textContent===c)); render();}
+function render(){
+  let list=MENU.filter(x=>x.available!==false);
+  if(activeCat!=='الكل') list=list.filter(x=>x.category===activeCat);
+  document.getElementById('menu').innerHTML=list.map(i=>{
+    const inCart=CART.find(x=>x.id===i.id);
+    return `<div class="item">
+      <div class="img">${i.category==='بيتزا'?'🍕':i.category==='برجر'?'🍔':i.category==='باستا'?'🍝':i.category==='مقبلات'?'🥗':i.category==='مشروبات'?'🥤':'🍽️'}</div>
+      <div class="body">
+        <h3>${i.name}</h3><div class="desc">${i.desc||''}</div>
+        <div class="price">${i.price} د.ل</div>
+        ${inCart?`<div class="qty"><button onclick="dec('${i.id}')">-</button><span>${inCart.qty}</span><button onclick="inc('${i.id}')">+</button></div>`:`<button class="add" onclick="add('${i.id}')">+ إضافة للسلة</button>`}
+      </div>
+    </div>`;
+  }).join('')||'<div style="grid-column:1/-1;text-align:center;color:#888;padding:40px"><div style="font-size:40px">🍽️</div>لا يوجد أصناف في هذه الفئة</div>';
+}
+function add(id){ const it=MENU.find(x=>x.id===id); const ex=CART.find(x=>x.id===id); if(ex) ex.qty++; else CART.push({...it,qty:1}); updateCart(); render(); }
+function inc(id){ const ex=CART.find(x=>x.id===id); if(ex){ ex.qty++; updateCart(); render(); } }
+function dec(id){ const ex=CART.find(x=>x.id===id); if(ex){ ex.qty--; if(ex.qty<=0) CART=CART.filter(x=>x.id!==id); updateCart(); render(); } }
+function updateCart(){ const total=CART.reduce((s,x)=>s+x.price*x.qty,0); const count=CART.reduce((s,x)=>s+x.qty,0); document.getElementById('cartTotal').textContent=total+' د.ل'; document.getElementById('cartCount').textContent=count; document.getElementById('cart').classList.toggle('show',count>0); }
+function openCheckout(){ if(CART.length===0) return; document.getElementById('checkoutItems').innerHTML=CART.map(x=>`${x.name} x${x.qty} - ${x.price*x.qty} د.ل`).join('<br>')+`<br><hr style="border:none;border-top:1px solid #eee;margin:8px 0"><b>الإجمالي: ${CART.reduce((s,x)=>s+x.price*x.qty,0)} د.ل • طاولة ${table}</b>`; document.getElementById('checkoutModal').classList.add('show'); }
+function closeCheckout(){document.getElementById('checkoutModal').classList.remove('show');}
+async function submitOrder(){
+  const name=document.getElementById('cName').value.trim(); const phone=document.getElementById('cPhone').value.trim();
+  if(!name||!phone) return alert('اكتب اسمك ورقمك');
+  const order={restaurantId:rid, table, restaurantName:REST.name, items:CART, total:CART.reduce((s,x)=>s+x.price*x.qty,0), customerName:name, customerPhone:phone, notes:document.getElementById('cNotes').value};
+  const res=await fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(order)}).then(r=>r.json());
+  document.getElementById('checkoutModal').classList.remove('show'); document.getElementById('orderId').textContent=res.id; document.getElementById('successModal').classList.add('show'); CART=[]; updateCart(); render();
+}
+load();
+</script>
+</body>
+</html>

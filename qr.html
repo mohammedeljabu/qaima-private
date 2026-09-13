@@ -1,0 +1,85 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>امسح QR - Qaima</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@700;800;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0a0a0f;color:#fff;font-family:'Tajawal',system-ui;min-height:100vh}
+.bg{position:fixed;inset:0;background:radial-gradient(600px at 20% 10%, rgba(255,122,0,.18), transparent), radial-gradient(600px at 80% 90%, rgba(59,130,246,.15), transparent);pointer-events:none}
+.top{position:relative;z-index:2;padding:16px;display:flex;justify-content:space-between;align-items:center}
+.card{position:relative;z-index:2;max-width:520px;margin:10px auto;padding:0 16px}
+.scanner-wrap{background:#15151d;border:1px solid #23232f;border-radius:28px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+#reader{width:100%;aspect-ratio:1;background:#0f0f15;position:relative}
+#reader video{border-radius:28px}
+.info{padding:16px;background:linear-gradient(135deg,#15151d,#1a1a26);border-top:1px solid #23232f}
+.info h3{margin:0 0 8px;font-size:16px;font-weight:800}
+.steps{font-size:13px;color:#aaa;line-height:1.8}
+.steps b{color:#fff}
+.manual{margin-top:16px;background:#15151d;border:1px solid #23232f;border-radius:20px;padding:16px}
+.manual h4{margin:0 0 10px;font-size:14px}
+input{width:100%;background:#0f0f15;border:1px solid #23232f;color:#fff;padding:12px 14px;border-radius:12px;outline:none;font-family:inherit;margin-top:8px}
+.btn{width:100%;border:0;padding:13px;border-radius:12px;font-weight:800;cursor:pointer;font-family:inherit;margin-top:10px}
+.btn-orange{background:linear-gradient(135deg,#ff7a00,#ff9a3d);color:#000}
+.btn-dark{background:#23232f;color:#fff}
+.badge{display:inline-flex;padding:6px 12px;border-radius:999px;background:#ff7a00;color:#000;font-size:11px;font-weight:800}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="top"><div><span class="badge">📱 منصة الزبون</span><div style="margin-top:8px;font-weight:900;font-size:18px">امسح QR واطلب</div><div style="font-size:11px;color:#888">بدون تطبيق - مباشرة من الكاميرا</div></div><a href="/" style="background:#15151d;border:1px solid #23232f;color:#fff;padding:8px 12px;border-radius:10px;text-decoration:none">🏠</a></div>
+
+<div class="card">
+  <div class="scanner-wrap">
+    <div id="reader"></div>
+    <div class="info">
+      <h3>📸 وجّه الكاميرا لـ QR الطاولة</h3>
+      <div class="steps">
+        <b>1-</b> افتح QR الموجود على الطاولة<br>
+        <b>2-</b> المنيو يفتح تلقائي مع رقم طاولتك<br>
+        <b>3-</b> اختر واطلب - المطبخ يستقبله فوراً 🚀
+      </div>
+    </div>
+  </div>
+
+  <div class="manual">
+    <h4>✍️ أو ادخل يدوياً</h4>
+    <input id="manualRest" placeholder="كود المطعم - مثلا rest_1">
+    <input id="manualTable" type="number" placeholder="رقم الطاولة - 5">
+    <button class="btn btn-orange" onclick="goManual()">فتح المنيو 🚀</button>
+    <div style="margin-top:10px;font-size:11px;color:#666;text-align:center">المطعم يعطيك الكود في الفاتورة أو على الطاولة</div>
+  </div>
+
+  <div style="text-align:center;margin-top:16px;font-size:11px;color:#555">Qaima • نظام طلب بالـ QR • سريع وآمن</div>
+</div>
+
+<script>
+function onScanSuccess(decodedText){
+  try{
+    // لو الرابط كامل افتحه مباشرة
+    if(decodedText.includes('/c/')||decodedText.includes('/menu/')||decodedText.startsWith('http')){
+      location.href=decodedText;
+      return;
+    }
+    // لو فقط كود المطعم
+    location.href='/menu/'+decodedText+'?table=1';
+  }catch(e){ alert(decodedText); }
+}
+function onScanFailure(e){}
+
+const qr = new Html5Qrcode("reader");
+qr.start({facingMode:"environment"}, {fps:10, qrbox:{width:280,height:280}}, onScanSuccess, onScanFailure).catch(err=>{
+  document.getElementById('reader').innerHTML=`<div style="padding:40px;text-align:center;color:#888"><div style="font-size:40px">📷</div><div style="margin-top:10px">الكاميرا غير متاحة</div><div style="font-size:12px;margin-top:6px">استخدم الإدخال اليدوي بالأسفل<br>${err}</div></div>`;
+});
+
+function goManual(){
+  const rest=document.getElementById('manualRest').value.trim();
+  const table=document.getElementById('manualTable').value.trim()||'1';
+  if(!rest) return alert('اكتب كود المطعم');
+  location.href='/c/'+rest+'/'+table;
+}
+</script>
+</body>
+</html>
