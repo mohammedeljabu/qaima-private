@@ -36,7 +36,7 @@ th{background:#1c1c1c;color:#888;font-size:11px;padding:12px;text-align:right} t
 <body>
 <div class="topbar">
   <div><div class="logo">Qaima Super Admin <span style="color:#ff8a00">PRO</span></div><div class="mini">تحكم كامل بالمطاعم - تعديل - تمديد - إيقاف - تغيير باقة</div></div>
-  <div style="display:flex;gap:8px"><span id="kvBadge" class="badge">...</span><span class="badge b-free">🎁 شهر مجاني مفعل</span></div>
+  <div style="display:flex;gap:8px"><button class="btn-d" onclick="viewOrders()">📦 الطلبات</button><span id="kvBadge" class="badge">...</span><span class="badge b-free">🎁 شهر مجاني مفعل</span></div>
 </div>
 
 <div class="stats" id="stats"></div>
@@ -95,7 +95,7 @@ async function load(){
   document.getElementById('kvBadge').innerHTML=h.hasKV?'<span class="badge b-kv">✅ KV متصل - دائم</span>':'<span class="badge" style="background:#facc15;color:#000">⚠️ مؤقت</span>';
   render();
 }
-function setFilter(f){ FILTER=f; document.getElementById('fSt').value=f; render(); load(); }
+function setFilter(f){ FILTER=f; document.getElementById('fSt').value=f; render(); function viewOrders(){ window.open('/api/orders','_blank'); } load(); }
 function render(){
   const pkg=document.getElementById('fPkg').value;
   const st=document.getElementById('fSt').value;
@@ -113,7 +113,7 @@ function render(){
       <td><span class="s ${r.status==='نشطة'?'s-a':r.status.includes('تجربة')?'s-t':r.status==='موقوفة'?'s-s':'s-e'}">${r.status}</span>${r.isTrial?'<div style="font-size:10px;color:#60a5fa">🎁 مجاني</div>':''}</td>
       <td>${r.expiry}<div style="font-size:11px;color:${r.remainingDays<=3?'#ff5555':'#888'}">${r.remainingDays} يوم متبقي</div></td>
       <td><b>${r.mrr||0} د.ل</b>${r.price===0?'<div style="font-size:10px;color:#22c55e">مجاني</div>':''}</td>
-      <td><div class="actions"><button class="btn-d" onclick="openEdit('${r.id}')">⚙️ تحكم</button><button class="btn-d" onclick="ext('${r.id}')">⏩ تمديد</button></div></td>
+      <td><div class="actions"><button class="btn-d" onclick="openEdit('${r.id}')">⚙️ تحكم</button><button class="btn-d" onclick="location.href='/manage/'+'${r.id}'">📋 منيو</button><button class="btn-d" onclick="window.open('/menu/'+'${r.id}','_blank')">👁️ صفحة الزبون</button></div></td>
     </tr>`).join('')||'<tr><td colspan=7 style="text-align:center;color:#666;padding:30px">لا يوجد</td></tr>';
 }
 function openAdd(){document.getElementById('addModal').classList.add('show')}
@@ -122,7 +122,7 @@ async function doAdd(){
   const name=document.getElementById('aName').value.trim(); const phone=document.getElementById('aPhone').value.trim(); const price=document.getElementById('aPkg').value;
   if(!name) return alert('اكتب اسم المطعم');
   await fetch('/api/restaurants',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,phone,price})});
-  closeAdd(); document.getElementById('aName').value=''; await load();
+  closeAdd(); document.getElementById('aName').value=''; await function viewOrders(){ window.open('/api/orders','_blank'); } load();
 }
 function openEdit(id){
   CUR=DATA.find(x=>x.id===id); if(!CUR) return;
@@ -152,14 +152,14 @@ async function saveEdit(){
   // if package changed also update plan
   await fetch('/api/restaurants/'+CUR.id+'/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({price:body.originalPrice,package:body.package})});
   if(body.status!==CUR.status){ await fetch('/api/restaurants/'+CUR.id+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:body.status})}); }
-  closeEdit(); await load();
+  closeEdit(); await function viewOrders(){ window.open('/api/orders','_blank'); } load();
 }
-async function quickExtend(d){ if(!CUR) return; await fetch('/api/restaurants/'+CUR.id+'/extend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days:d})}); await load(); const r=DATA.find(x=>x.id===CUR.id); if(r){ document.getElementById('eExpiry').value=r.expiry; } }
-async function doActivate(){ if(!CUR) return; await fetch('/api/restaurants/'+CUR.id+'/activate',{method:'POST'}); closeEdit(); await load(); }
-async function toggleStop(){ if(!CUR) return; await fetch('/api/restaurants/'+CUR.id+'/toggle',{method:'POST'}); closeEdit(); await load(); }
-async function doDel(){ if(!CUR) return; if(!confirm('تأكيد حذف '+CUR.name+' نهائيا؟')) return; await fetch('/api/restaurants/'+CUR.id,{method:'DELETE'}); closeEdit(); await load(); }
-async function ext(id){ const d=prompt('كم يوم تبي تمدد؟ اكتب رقم: 30 مثلا'); if(!d) return; await fetch('/api/restaurants/'+id+'/extend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days:Number(d)})}); await load(); }
-load();
+async function quickExtend(d){ if(!CUR) return; await fetch('/api/restaurants/'+CUR.id+'/extend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days:d})}); await function viewOrders(){ window.open('/api/orders','_blank'); } load(); const r=DATA.find(x=>x.id===CUR.id); if(r){ document.getElementById('eExpiry').value=r.expiry; } }
+async function doActivate(){ if(!CUR) return; await fetch('/api/restaurants/'+CUR.id+'/activate',{method:'POST'}); closeEdit(); await function viewOrders(){ window.open('/api/orders','_blank'); } load(); }
+async function toggleStop(){ if(!CUR) return; await fetch('/api/restaurants/'+CUR.id+'/toggle',{method:'POST'}); closeEdit(); await function viewOrders(){ window.open('/api/orders','_blank'); } load(); }
+async function doDel(){ if(!CUR) return; if(!confirm('تأكيد حذف '+CUR.name+' نهائيا؟')) return; await fetch('/api/restaurants/'+CUR.id,{method:'DELETE'}); closeEdit(); await function viewOrders(){ window.open('/api/orders','_blank'); } load(); }
+async function ext(id){ const d=prompt('كم يوم تبي تمدد؟ اكتب رقم: 30 مثلا'); if(!d) return; await fetch('/api/restaurants/'+id+'/extend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days:Number(d)})}); await function viewOrders(){ window.open('/api/orders','_blank'); } load(); }
+function viewOrders(){ window.open('/api/orders','_blank'); } load();
 </script>
 </body>
 </html>

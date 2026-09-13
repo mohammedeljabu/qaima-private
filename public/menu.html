@@ -1,0 +1,81 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>قائمة الطعام</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui;background:#faf7f2;color:#222}
+.header{background:#111;color:#fff;padding:20px;text-align:center;position:sticky;top:0;z-index:10}
+.header h1{margin:0;font-size:22px} .header p{margin:6px 0 0;color:#aaa;font-size:13px}
+.cats{display:flex;gap:8px;padding:12px;overflow:auto;background:#fff;border-bottom:1px solid #eee;position:sticky;top:72px;z-index:9}
+.cat{padding:8px 14px;border-radius:999px;background:#f0e9df;border:1px solid #e5d9c5;white-space:nowrap;cursor:pointer;font-size:13px}
+.cat.active{background:#ff8a00;color:#000;border-color:#ff8a00;font-weight:800}
+.menu{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;padding:16px;max-width:1200px;margin:auto}
+.item{background:#fff;border:1px solid #eee;border-radius:16px;padding:14px;display:flex;gap:12px;align-items:flex-start}
+.item img{width:70px;height:70px;border-radius:12px;background:#f5f0e8;object-fit:cover}
+.item h3{margin:0;font-size:15px} .item .desc{color:#777;font-size:12px;margin:4px 0} .item .price{font-weight:900;color:#ff6a00;margin-top:6px}
+.add{margin-top:8px;background:#111;color:#fff;border:0;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px}
+.cart{position:fixed;bottom:0;left:0;right:0;background:#111;color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;z-index:20;transform:translateY(100%);transition:.3s}
+.cart.show{transform:translateY(0)} .cart button{background:#ff8a00;color:#000;border:0;padding:10px 16px;border-radius:10px;font-weight:900;cursor:pointer}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:16px;z-index:30}
+.modal.show{display:flex} .box{background:#fff;border-radius:16px;padding:20px;max-width:420px;width:100%;max-height:90vh;overflow:auto}
+input,textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-top:8px;font-size:14px}
+.success{text-align:center;padding:30px}
+</style>
+</head>
+<body>
+<div class="header"><h1 id="restName">جاري التحميل...</h1><p id="restInfo"></p></div>
+<div class="cats" id="cats"></div>
+<div class="menu" id="menu"></div>
+<div class="cart" id="cart"><div><b id="cartCount">0</b> منتج - <b id="cartTotal">0 د.ل</b></div><button onclick="openCheckout()">إتمام الطلب 🛒</button></div>
+<div id="checkoutModal" class="modal"><div class="box">
+  <h3>إتمام الطلب</h3>
+  <div id="checkoutItems" style="font-size:13px;color:#555;margin:10px 0"></div>
+  <input id="cName" placeholder="اسمك الكامل">
+  <input id="cPhone" placeholder="رقم الهاتف - مثال 0912345678">
+  <input id="cAddress" placeholder="العنوان / رقم الطاولة (اختياري)">
+  <textarea id="cNotes" placeholder="ملاحظات للطلب..." rows="2"></textarea>
+  <div style="display:flex;gap:10px;margin-top:14px"><button onclick="submitOrder()" style="flex:1;background:#ff8a00;border:0;padding:12px;border-radius:10px;font-weight:900;cursor:pointer">تأكيد الطلب ✅</button><button onclick="closeCheckout()" style="flex:1;background:#eee;border:0;padding:12px;border-radius:10px;cursor:pointer">إلغاء</button></div>
+</div></div>
+<div id="successModal" class="modal"><div class="box success"><h2>✅ تم استلام طلبك!</h2><p id="orderId" style="color:#666;font-size:13px"></p><p style="margin-top:12px">سيتواصل معك المطعم قريبا</p><button onclick="location.reload()" style="margin-top:16px;background:#111;color:#fff;border:0;padding:10px 16px;border-radius:10px;cursor:pointer">طلب جديد</button></div></div>
+<script>
+const rid = location.pathname.split('/').pop();
+let REST=null, MENU=[], CART=[], activeCat='الكل';
+async function load(){
+  const [r,m]=await Promise.all([fetch('/api/restaurants/'+rid).then(x=>x.json()), fetch('/api/restaurants/'+rid+'/menu').then(x=>x.json())]);
+  REST=r; MENU=m;
+  document.getElementById('restName').textContent=r.name;
+  document.getElementById('restInfo').textContent=(r.status==='نشطة'?'🟢 مفتوح الآن - ':'⏸️ ')+ (r.phone||'') + ' - شهر مجاني 🎁';
+  const cats=['الكل',...new Set(m.map(x=>x.category))];
+  document.getElementById('cats').innerHTML=cats.map(c=>`<div class="cat ${c===activeCat?'active':''}" onclick="setCat('${c}')">${c}</div>`).join('');
+  render();
+}
+function setCat(c){activeCat=c; document.querySelectorAll('.cat').forEach(el=>el.classList.toggle('active',el.textContent===c)); render();}
+function render(){
+  let list=MENU.filter(x=>x.available!==false);
+  if(activeCat!=='الكل') list=list.filter(x=>x.category===activeCat);
+  document.getElementById('menu').innerHTML=list.map(i=>`
+    <div class="item">
+      <img src="https://via.placeholder.com/70x70/f0e9df/888?text=${encodeURIComponent(i.name.substring(0,2))}" alt="">
+      <div style="flex:1">
+        <h3>${i.name}</h3><div class="desc">${i.desc||''}</div><div class="price">${i.price} د.ل</div>
+        <button class="add" onclick="add('${i.id}')">+ إضافة للسلة</button>
+      </div>
+    </div>`).join('')||'<div style="grid-column:1/-1;text-align:center;color:#888;padding:40px">لا يوجد أصناف في هذه الفئة</div>';
+}
+function add(id){ const it=MENU.find(x=>x.id===id); const ex=CART.find(x=>x.id===id); if(ex) ex.qty++; else CART.push({...it,qty:1}); updateCart(); }
+function updateCart(){ const total=CART.reduce((s,x)=>s+x.price*x.qty,0); const count=CART.reduce((s,x)=>s+x.qty,0); document.getElementById('cartTotal').textContent=total+' د.ل'; document.getElementById('cartCount').textContent=count; document.getElementById('cart').classList.toggle('show',count>0); }
+function openCheckout(){ if(CART.length===0) return; document.getElementById('checkoutItems').innerHTML=CART.map(x=>`${x.name} x${x.qty} - ${x.price*x.qty} د.ل`).join('<br>')+`<br><br><b>الإجمالي: ${CART.reduce((s,x)=>s+x.price*x.qty,0)} د.ل</b>`; document.getElementById('checkoutModal').classList.add('show'); }
+function closeCheckout(){document.getElementById('checkoutModal').classList.remove('show');}
+async function submitOrder(){
+  const name=document.getElementById('cName').value.trim(); const phone=document.getElementById('cPhone').value.trim();
+  if(!name||!phone) return alert('اكتب اسمك ورقم الهاتف');
+  const order={restaurantId:rid, restaurantName:REST.name, items:CART, total:CART.reduce((s,x)=>s+x.price*x.qty,0), customerName:name, customerPhone:phone, address:document.getElementById('cAddress').value, notes:document.getElementById('cNotes').value};
+  const res=await fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(order)}).then(r=>r.json());
+  document.getElementById('checkoutModal').classList.remove('show'); document.getElementById('orderId').textContent='رقم الطلب: '+res.id; document.getElementById('successModal').classList.add('show'); CART=[]; updateCart();
+}
+load();
+</script>
+</body>
+</html>
