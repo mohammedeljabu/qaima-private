@@ -3,71 +3,134 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>قيمة - Qaima</title>
+<title>Qaima Super Admin</title>
 <style>
-body{font-family:system-ui;background:#0f0f0f;color:#fff;margin:0;padding:20px}
-.card{background:#1a1a1a;border-radius:16px;padding:20px;margin-bottom:16px;border:1px solid #2a2a2a}
-.btn{background:#fff;color:#000;border:0;padding:12px 20px;border-radius:12px;font-weight:700;cursor:pointer}
-.btn:hover{opacity:.9}
-input{background:#222;border:1px solid #333;color:#fff;padding:12px;border-radius:10px;width:100%;margin:6px 0}
-.badge{padding:4px 10px;border-radius:20px;font-size:12px}
-.badge-ok{background:#22c55e;color:#000}
-.badge-warn{background:#facc15;color:#000}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+*{box-sizing:border-box}body{margin:0;background:#0a0a0a;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto;overflow-x:hidden}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;background:#111;border-bottom:1px solid #222}
+.logo{font-weight:900;font-size:20px}
+.badge-kv{background:#22c55e;color:#000;padding:6px 14px;border-radius:999px;font-weight:800;font-size:12px;display:inline-flex;gap:6px;align-items:center}
+.badge-warn{background:#facc15;color:#000;padding:6px 14px;border-radius:999px;font-weight:800;font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:20px}
+.card{background:#151515;border:1px solid #222;border-radius:16px;padding:18px}
+.card h3{margin:0;font-size:13px;color:#888}
+.card .num{font-size:28px;font-weight:900;margin-top:8px}
+.card .sub{font-size:12px;color:#666;margin-top:4px}
+.toolbar{display:flex;gap:12px;padding:0 20px 16px;flex-wrap:wrap;align-items:center}
+.btn{background:#ff8a00;color:#000;border:0;padding:12px 18px;border-radius:12px;font-weight:900;cursor:pointer}
+.btn-dark{background:#222;color:#fff;border:1px solid #333;padding:10px 14px;border-radius:10px;cursor:pointer}
+input,select{background:#1a1a1a;border:1px solid #2a2a2a;color:#fff;padding:12px 14px;border-radius:12px;outline:none}
+.table-wrap{padding:0 20px 40px;overflow:auto}
+table{width:100%;border-collapse:collapse;background:#121212;border-radius:16px;overflow:hidden}
+th{background:#1a1a1a;color:#888;font-size:12px;padding:14px;text-align:right}
+td{padding:14px;border-top:1px solid #1e1e1e;font-size:14px}
+.status{padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700;display:inline-block}
+.s-active{background:#16a34a;color:#fff}
+.s-trial{background:#2563eb;color:#fff}
+.s-expired{background:#7f1d1d;color:#ffb4b4}
+.mini{color:#888;font-size:12px}
+@media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
-<h1>🍽️ قيمة - لوحة التحكم</h1>
-<div class="card" id="status">جاري فحص قاعدة البيانات...</div>
-
-<div class="card">
-<h3>إضافة مطعم جديد</h3>
-<input id="rName" placeholder="اسم المطعم مثلا: مطعم طرابلس">
-<input id="rPrice" type="number" placeholder="سعر التوصيل 5" value="5">
-<button class="btn" onclick="addRestaurant()">إنشاء وتفعيل ✅</button>
+<div class="topbar">
+  <div><div class="logo">Qaima Super Admin</div><div class="mini">مشروعك الخاص - تحكم برو كامل - بدون دفع ثمنيا</div></div>
+  <div id="kvBadge"><span class="badge-warn">جاري فحص قاعدة البيانات...</span></div>
 </div>
 
-<div id="restaurants" class="grid"></div>
+<div style="padding:12px 20px;background:#1a1200;border-bottom:1px solid #332200;color:#ffbb00;font-size:13px" id="alertBar">⏳ 3 مشترك ينتظر فتح هذا الأسبوع - <b id="waitingCount">3</b> مشترك ينتظر فتح هذا الأسبوع</div>
 
-<h2>الطلبات</h2>
-<div id="orders"></div>
+<div class="stats">
+  <div class="card"><h3>منتهي / موقوف</h3><div class="num" id="statExpired">0</div><div class="sub" id="subExpired">يحتاج متابعة</div></div>
+  <div class="card"><h3>تجارب مجانية</h3><div class="num" id="statTrial">0</div><div class="sub">قيد التجربة</div></div>
+  <div class="card"><h3>مطاعم نشطة</h3><div class="num" id="statActive">0</div><div class="sub">يدفعون شهريا</div></div>
+  <div class="card"><h3>الإيراد الشهري MRR</h3><div class="num" id="statMRR">0 د.ل</div><div class="sub">لتحم يدوي - كاش</div></div>
+</div>
+
+<div class="toolbar">
+  <button class="btn" onclick="openAdd()">+ إضافة مطعم واشتراكات</button>
+  <select id="filterPackage" onchange="render()"><option value="all">كل الباقات</option><option value="99">البداية - 99 د.ل</option><option value="199">الاحترافية - 199 د.ل</option><option value="399">المؤسسي - 399 د.ل</option></select>
+  <select id="filterStatus" onchange="render()"><option value="all">كل الحالات</option><option value="نشطة">نشطة</option><option value="تجربة">تجربة مجانية</option><option value="منتهي">منتهي</option></select>
+  <input id="search" placeholder="ابحث باسم المطعم أو الهاتف..." oninput="render()" style="flex:1;min-width:200px">
+</div>
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>#</th><th>المطعم</th><th>الباقة</th><th>الحالة</th><th>الانتهاء</th><th>متبقي</th><th>المبلغ</th><th>الإجراء</th></tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+
+<!-- Add Modal Simple -->
+<div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:center;justify-content:center;padding:20px">
+  <div class="card" style="max-width:420px;width:100%">
+    <h3>إضافة مطعم جديد</h3>
+    <input id="mName" placeholder="اسم المطعم مثلا: مطعم طرابلس" style="width:100%;margin-top:12px">
+    <select id="mPackage" style="width:100%;margin-top:10px"><option value="99">البداية - 99 د.ل - 30 يوم</option><option value="199" selected>الاحترافية - 199 د.ل - 30 يوم</option><option value="399">المؤسسي - 399 د.ل - 60 يوم</option></select>
+    <div style="display:flex;gap:10px;margin-top:14px"><button class="btn" onclick="doAdd()" style="flex:1">إنشاء وتفعيل ✅</button><button class="btn-dark" onclick="closeAdd()" style="flex:1">إلغاء</button></div>
+  </div>
+</div>
 
 <script>
-async function checkHealth(){
+let DATA={restaurants:[]};
+async function checkKV(){
   try{
-    const r = await fetch('/api/health'); const j = await r.json();
-    document.getElementById('status').innerHTML = j.hasKV ? 
-      '<span class="badge badge-ok">✅ KV متصل - الحفظ الدائم مفعل - '+j.mode+'</span> قاعدة البيانات شغالة' :
-      '<span class="badge badge-warn">⚠️ وضع مؤقت</span> أعد الـ Redeploy لتفعيل KV';
-  }catch(e){ document.getElementById('status').textContent='خطأ اتصال'; }
+    const r=await fetch('/api/health');const j=await r.json();
+    document.getElementById('kvBadge').innerHTML=j.hasKV?`<span class="badge-kv">✅ KV متصل - الحفظ الدائم مفعل - ${j.mode} - قاعدة البيانات شغالة</span>`:`<span class="badge-warn">⚠️ وضع مؤقت - ${j.mode}</span>`;
+  }catch(e){document.getElementById('kvBadge').innerHTML='<span class="badge-warn">خطأ اتصال</span>'}
 }
-async function loadRestaurants(){
-  const r = await fetch('/api/restaurants'); const list = await r.json();
-  document.getElementById('restaurants').innerHTML = list.map(x=>`
-    <div class="card">
-      <b>${x.name}</b><br>التوصيل: ${x.price} د.ل<br>
-      <span class="badge badge-ok">${x.active?'مفعل':'موقف'}</span>
-      <br><br><button class="btn" style="background:#333;color:#fff" onclick="delRest('${x.id}')">حذف</button>
-    </div>`).join('') || 'لا يوجد مطاعم';
+async function load(){
+  const [rData, rStats]=await Promise.all([fetch('/api/data').then(r=>r.json()), fetch('/api/stats').then(r=>r.json()).catch(()=>null)]);
+  DATA=rData;
+  if(rStats){
+    document.getElementById('statActive').textContent=rStats.active;
+    document.getElementById('statTrial').textContent=rStats.trial;
+    document.getElementById('statExpired').textContent=rStats.expired;
+    document.getElementById('statMRR').textContent=rStats.mrr+' د.ل';
+    document.getElementById('waitingCount').textContent=rStats.trial;
+  } else {
+    const active=DATA.restaurants.filter(x=>x.status==='نشطة').length;
+    const trial=DATA.restaurants.filter(x=>x.status.includes('تجربة')).length;
+    const exp=DATA.restaurants.filter(x=>x.status.includes('منتهي')||x.status.includes('موقوف')).length;
+    const mrr=DATA.restaurants.reduce((s,x)=>s+(x.mrr||x.price||0),0);
+    document.getElementById('statActive').textContent=active;
+    document.getElementById('statTrial').textContent=trial;
+    document.getElementById('statExpired').textContent=exp;
+    document.getElementById('statMRR').textContent=mrr+' د.ل';
+  }
+  render();
 }
-async function addRestaurant(){
-  const name = document.getElementById('rName').value.trim();
-  const price = document.getElementById('rPrice').value;
+function render(){
+  const pkg=document.getElementById('filterPackage').value;
+  const st=document.getElementById('filterStatus').value;
+  const q=document.getElementById('search').value.toLowerCase();
+  let list=DATA.restaurants||[];
+  if(pkg!=='all') list=list.filter(x=>String(x.price)===pkg || (x.package||'').includes(pkg));
+  if(st!=='all') list=list.filter(x=>(x.status||'').includes(st));
+  if(q) list=list.filter(x=>(x.name||'').toLowerCase().includes(q));
+  document.getElementById('tbody').innerHTML=list.map((r,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td><b>${r.name}</b><div class="mini">${r.id}</div></td>
+      <td><span class="mini">${r.package||r.price+' د.ل'}</span></td>
+      <td><span class="status ${r.status==='نشطة'?'s-active':r.status.includes('تجربة')?'s-trial':'s-expired'}">${r.status}</span></td>
+      <td>${r.expiry||'-'}</td>
+      <td>${r.remainingDays? r.remainingDays+' يوم':''}</td>
+      <td>${r.mrr||r.price||0} د.ل</td>
+      <td><button class="btn-dark" onclick="del('${r.id}')">حذف</button></td>
+    </tr>`).join('')||`<tr><td colspan=8 style="text-align:center;padding:30px;color:#666">لا يوجد مطاعم</td></tr>`;
+}
+function openAdd(){document.getElementById('modal').style.display='flex'}
+function closeAdd(){document.getElementById('modal').style.display='none'}
+async function doAdd(){
+  const name=document.getElementById('mName').value.trim();
+  const price=document.getElementById('mPackage').value;
   if(!name) return alert('اكتب اسم المطعم');
-  const r = await fetch('/api/restaurants',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,price})});
-  const j = await r.json();
-  document.getElementById('rName').value=''; loadRestaurants(); alert('تم إضافة '+j.name+' ✅ وسيبقى للأبد');
+  await fetch('/api/restaurants',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,price})});
+  closeAdd(); document.getElementById('mName').value=''; await load();
 }
-async function delRest(id){
-  if(!confirm('تأكيد الحذف؟')) return;
-  await fetch('/api/restaurants/'+id,{method:'DELETE'}); loadRestaurants();
-}
-async function loadOrders(){
-  const r = await fetch('/api/orders'); const list = await r.json();
-  document.getElementById('orders').innerHTML = list.slice(-10).reverse().map(o=>`<div class="card">${o.id} - ${JSON.stringify(o).slice(0,120)}</div>`).join('') || 'لا يوجد طلبات بعد';
-}
-checkHealth(); loadRestaurants(); loadOrders();
-setInterval(checkHealth,5000);
+async function del(id){ if(!confirm('تحذف المطعم؟')) return; await fetch('/api/restaurants/'+id,{method:'DELETE'}); await load(); }
+checkKV(); load();
+setInterval(checkKV,8000);
 </script>
 </body>
 </html>
