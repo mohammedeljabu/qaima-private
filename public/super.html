@@ -1,0 +1,110 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Super Admin - Qaima</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#080808;color:#fff;font-family:system-ui}
+.top{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#111;border-bottom:1px solid #222;flex-wrap:wrap;gap:10px}
+.badge{padding:6px 12px;border-radius:999px;font-size:11px;font-weight:800}.bkv{background:#22c55e;color:#000}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:12px}
+.card{background:#151515;border:1px solid #222;border-radius:12px;padding:12px;cursor:pointer}.card.active{border-color:#ff8a00;background:#1a1200}
+.card h3{margin:0;font-size:11px;color:#888}.card .num{font-size:20px;font-weight:900;margin-top:4px}
+.toolbar{display:flex;gap:8px;padding:0 12px 10px;flex-wrap:wrap}
+.btn{background:#ff8a00;color:#000;border:0;padding:10px 14px;border-radius:9px;font-weight:900;cursor:pointer;font-size:13px}.btn-d{background:#222;color:#fff;border:1px solid #333;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:12px}
+input,select{background:#1e1e1e;border:1px solid #333;color:#fff;padding:9px;border-radius:8px;font-size:13px}
+.table-wrap{overflow:auto;padding:0 12px 40px}table{width:100%;border-collapse:collapse;background:#121212;border-radius:12px;overflow:hidden;min-width:1000px}
+th{background:#1c1c1c;color:#888;font-size:11px;padding:10px;text-align:right}td{padding:10px;border-top:1px solid #1e1e1e;font-size:12px}
+.s{padding:4px 8px;border-radius:999px;font-size:10px;font-weight:700}.sa{background:#16a34a;color:#fff}.st{background:#2563eb;color:#fff}.ss{background:#444}.se{background:#7f1d1d;color:#ffb4b4}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;padding:12px;z-index:50}.modal.show{display:flex}
+.box{background:#161616;border:1px solid #2a2a2a;border-radius:14px;padding:16px;max-width:500px;width:100%;max-height:90vh;overflow:auto}
+.row{display:flex;gap:8px}.row>*{flex:1}
+</style>
+</head>
+<body>
+<div class="top"><div><b>Qaima Super Admin <span style="color:#ff8a00">PRO</span></b><div style="font-size:11px;color:#888">تحكم مطاعم + اشتراكات + QR + شهر مجاني</div></div><div style="display:flex;gap:6px"><a href="/" class="btn-d" style="text-decoration:none">🏠 الرئيسية</a><span class="badge bkv" id="kv">...</span></div></div>
+<div class="stats" id="stats"></div>
+<div class="toolbar">
+  <button class="btn" onclick="openAdd()">+ إضافة مطعم جديد (اسم + شخص + هاتف + باسورد)</button>
+  <select id="fPkg" onchange="render()"><option value="all">كل الباقات</option><option value="99">99</option><option value="199">199</option><option value="399">399</option></select>
+  <select id="fSt" onchange="render()"><option value="all">كل الحالات</option><option value="نشطة">نشطة</option><option value="تجربة مجانية">تجربة</option><option value="موقوفة">موقوفة</option></select>
+  <input id="search" placeholder="بحث اسم/شخص/هاتف..." oninput="render()" style="flex:1;min-width:180px">
+</div>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>المطعم / الشخص</th><th>الهاتف / الباسورد</th><th>الباقة</th><th>الحالة</th><th>انتهاء</th><th>MRR</th><th>تحكم كامل</th></tr></thead><tbody id="tbody"></tbody></table></div>
+
+<div id="addModal" class="modal"><div class="box">
+  <h3>إضافة مطعم جديد - مع بيانات الدخول 🔐</h3>
+  <div style="background:#16a34a;color:#fff;padding:6px 10px;border-radius:8px;font-size:12px;margin:8px 0">🎁 ياخد 30 يوم مجاني تلقائي - يدخل بمنصة المطعم بهاتفه وباسورده</div>
+  <input id="aName" placeholder="اسم المطعم - مثلا سفيرة" style="width:100%;margin-top:6px">
+  <input id="aOwner" placeholder="اسم الشخص المسؤول - مثلا أحمد" style="width:100%;margin-top:6px">
+  <div class="row" style="margin-top:6px"><input id="aPhone" placeholder="رقم هاتف الدخول - 091..."><input id="aPass" placeholder="باسورد - 1234"></div>
+  <div class="row" style="margin-top:6px"><select id="aPkg"><option value="99">99 د.ل - بداية</option><option value="199" selected>199 د.ل - احترافية</option><option value="399">399 د.ل - مؤسسي</option></select><input id="aTables" type="number" placeholder="عدد الطاولات - 10"></div>
+  <div class="row" style="margin-top:12px"><button class="btn" onclick="doAdd()" style="flex:1">إنشاء + شهر مجاني 🎁</button><button class="btn-d" onclick="closeAdd()">إلغاء</button></div>
+</div></div>
+
+<div id="editModal" class="modal"><div class="box">
+  <h3>تحكم بالمطعم</h3>
+  <input id="eName" style="width:100%;margin-top:6px"><input id="eOwner" style="width:100%;margin-top:6px"><div class="row" style="margin-top:6px"><input id="ePhone"><input id="ePass"></div>
+  <div class="row" style="margin-top:6px"><select id="eStatus"><option>نشطة</option><option>تجربة مجانية</option><option>موقوفة</option><option>منتهي</option></select><input id="eExpiry" type="date"></div>
+  <div class="row" style="margin-top:6px"><input id="ePrice" type="number" placeholder="السعر"><input id="eTables" type="number" placeholder="طاولات"></div>
+  <div class="row" style="margin-top:10px"><button class="btn" onclick="saveEdit()" style="flex:1">حفظ ✅</button><button class="btn-d" onclick="closeEdit()">إلغاء</button></div>
+  <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><button class="btn-d" onclick="ext(30)">+30 يوم</button><button class="btn-d" onclick="doActivate()">💳 تفعيل مدفوع</button><button class="btn-d" onclick="toggle()">⏸️ إيقاف/تشغيل</button><button class="btn-d" onclick="doDel()" style="background:#3a1111;color:#f99">🗑️ حذف</button></div>
+  <div style="display:flex;gap:6px;margin-top:10px"><button class="btn-d" onclick="goMenu()">📋 منيو</button><button class="btn-d" onclick="goQR()">🔳 QR الطاولات</button><button class="btn-d" onclick="goOwnerLogin()">🍽️ دخول كصاحب مطعم</button></div>
+</div></div>
+
+<script>
+let DATA=[], FILTER='all', CUR=null;
+async function load(){
+  const [d,s]=await Promise.all([fetch('/api/restaurants').then(r=>r.json()), fetch('/api/stats').then(r=>r.json())]);
+  DATA=d;
+  document.getElementById('stats').innerHTML=`
+    <div class="card ${FILTER==='all'?'active':''}" onclick="setF('all')"><h3>الكل</h3><div class="num">${s.total}</div></div>
+    <div class="card ${FILTER==='نشطة'?'active':''}" onclick="setF('نشطة')"><h3>نشطة 🟢</h3><div class="num">${s.active}</div><div style="font-size:11px;color:#888">${s.mrr} د.ل MRR</div></div>
+    <div class="card ${FILTER==='تجربة مجانية'?'active':''}" onclick="setF('تجربة مجانية')"><h3>تجربة 🎁</h3><div class="num">${s.trial}</div></div>
+    <div class="card"><h3>موقوفة</h3><div class="num">${s.stopped||0}</div></div>
+    <div class="card"><h3>طلبات</h3><div class="num">${s.orders||0}</div></div>
+  `;
+  const h=await fetch('/api/health').then(r=>r.json()); document.getElementById('kv').textContent=h.kv?'✅ KV متصل':'⚠️ مؤقت';
+  render();
+}
+function setF(f){FILTER=f; render();}
+function render(){
+  const pkg=document.getElementById('fPkg').value; const st=document.getElementById('fSt').value; const q=document.getElementById('search').value.toLowerCase();
+  let list=[...DATA];
+  if(FILTER!=='all') list=list.filter(x=>x.status.includes(FILTER));
+  if(st!=='all') list=list.filter(x=>x.status.includes(st));
+  if(pkg!=='all') list=list.filter(x=>String(x.originalPrice)===pkg);
+  if(q) list=list.filter(x=>x.name.toLowerCase().includes(q)||x.ownerName.toLowerCase().includes(q)||x.phone.includes(q));
+  document.getElementById('tbody').innerHTML=list.map((r,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td><b>${r.name}</b><div style="font-size:10px;color:#888">${r.ownerName||''}</div></td>
+      <td>${r.phone}<div style="font-size:10px;color:#888">pass: ${r.password}</div></td>
+      <td>${r.package}<div style="font-size:10px;color:#888">${r.tables||10} طاولة</div></td>
+      <td><span class="s ${r.status==='نشطة'?'sa':r.status.includes('تجربة')?'st':r.status==='موقوفة'?'ss':'se'}">${r.status}</span></td>
+      <td>${r.expiry}<div style="font-size:10px;color:${r.remainingDays<=3?'#f55':'#888'}">${r.remainingDays} يوم</div></td>
+      <td>${r.mrr} د.ل</td>
+      <td><div style="display:flex;gap:4px;flex-wrap:wrap"><button class="btn-d" onclick="openEdit('${r.id}')">⚙️</button><button class="btn-d" onclick="location.href='/manage/${r.id}'">📋</button><button class="btn-d" onclick="window.open('/menu/${r.id}','_blank')">👁️</button></div></td>
+    </tr>`).join('')||'<tr><td colspan=8 style="text-align:center;color:#666;padding:20px">لا يوجد</td></tr>';
+}
+function openAdd(){document.getElementById('addModal').classList.add('show')} function closeAdd(){document.getElementById('addModal').classList.remove('show')}
+async function doAdd(){
+  const body={name:document.getElementById('aName').value, ownerName:document.getElementById('aOwner').value, phone:document.getElementById('aPhone').value, password:document.getElementById('aPass').value, price:document.getElementById('aPkg').value, tables:document.getElementById('aTables').value||10};
+  if(!body.name||!body.phone||!body.password) return alert('املأ اسم المطعم والهاتف والباسورد');
+  const r=await fetch('/api/restaurants',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(x=>x.json());
+  if(r.error) return alert(r.error);
+  closeAdd(); await load();
+}
+function openEdit(id){ CUR=DATA.find(x=>x.id===id); document.getElementById('eName').value=CUR.name; document.getElementById('eOwner').value=CUR.ownerName||''; document.getElementById('ePhone').value=CUR.phone; document.getElementById('ePass').value=CUR.password; document.getElementById('eStatus').value=CUR.status; document.getElementById('eExpiry').value=CUR.expiry; document.getElementById('ePrice').value=CUR.originalPrice; document.getElementById('eTables').value=CUR.tables||10; document.getElementById('editModal').classList.add('show'); }
+function closeEdit(){document.getElementById('editModal').classList.remove('show')}
+async function saveEdit(){ const body={name:document.getElementById('eName').value, ownerName:document.getElementById('eOwner').value, phone:document.getElementById('ePhone').value, password:document.getElementById('ePass').value, status:document.getElementById('eStatus').value, expiry:document.getElementById('eExpiry').value, originalPrice:Number(document.getElementById('ePrice').value), tables:Number(document.getElementById('eTables').value)}; await fetch('/api/restaurants/'+CUR.id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); closeEdit(); await load(); }
+async function ext(d){ await fetch('/api/restaurants/'+CUR.id+'/extend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days:d})}); await load(); }
+async function doActivate(){ await fetch('/api/restaurants/'+CUR.id+'/activate',{method:'POST'}); closeEdit(); await load(); }
+async function toggle(){ await fetch('/api/restaurants/'+CUR.id+'/toggle',{method:'POST'}); closeEdit(); await load(); }
+async function doDel(){ if(!confirm('حذف نهائي؟')) return; await fetch('/api/restaurants/'+CUR.id,{method:'DELETE'}); closeEdit(); await load(); }
+function goMenu(){ location.href='/manage/'+CUR.id; } function goQR(){ window.open('/owner?rest='+CUR.id,'_blank'); } function goOwnerLogin(){ window.open('/owner','_blank'); }
+load();
+</script>
+</body>
+</html>

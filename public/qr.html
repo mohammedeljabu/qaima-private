@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QR Scanner - Qaima</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#000;color:#fff;font-family:system-ui;text-align:center}
+.top{padding:14px;background:#111;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center}
+.btn{background:#ff8a00;color:#000;border:0;padding:10px 14px;border-radius:9px;font-weight:900;cursor:pointer}.btn-d{background:#222;color:#fff;border:1px solid #333;padding:8px 10px;border-radius:8px;cursor:pointer}
+#reader{width:100%;max-width:500px;margin:20px auto;background:#111;border-radius:16px;overflow:hidden}
+.info{max-width:500px;margin:20px auto;padding:16px;background:#151515;border:1px solid #222;border-radius:12px}
+.manual{max-width:500px;margin:20px auto;padding:12px}
+input{background:#1e1e1e;border:1px solid #333;color:#fff;padding:12px;border-radius:10px;width:100%;margin-top:8px}
+</style>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+<div class="top"><div><b>📱 مسح QR للطلب</b><div style="font-size:11px;color:#888">افتح كاميرا وامسح كود الطاولة</div></div><div><a href="/" class="btn-d" style="text-decoration:none">🏠</a></div></div>
+<div id="reader"></div>
+<div class="info">
+  <b>كيف تطلب؟</b>
+  <div style="font-size:13px;color:#aaa;margin-top:8px;line-height:1.6">
+    1- افتح كاميرا هاتفك وامسح QR الموجود على الطاولة<br>
+    2- سيفتح منيو المطعم تلقائيا مع رقم طاولتك<br>
+    3- اختر طلبك وأرسل - المطعم يستقبله فورا
+  </div>
+</div>
+<div class="manual">
+  <div style="font-size:13px;color:#888">أو ادخل كود المطعم يدويا:</div>
+  <input id="manualRest" placeholder="مثال: rest_1">
+  <input id="manualTable" placeholder="رقم الطاولة - مثال 5" type="number">
+  <button class="btn" style="width:100%;margin-top:10px" onclick="goManual()">فتح المنيو 🚀</button>
+</div>
+<script>
+function onScanSuccess(decodedText){
+  // decodedText expected to be URL like /c/rest_1/5 or /menu/rest_1?table=5 or just rest_1
+  try{
+    if(decodedText.includes('/c/')||decodedText.includes('/menu/')){
+      location.href=decodedText;
+    } else if(decodedText.startsWith('http')){
+      location.href=decodedText;
+    } else {
+      // assume rest id
+      location.href='/menu/'+decodedText;
+    }
+  }catch(e){ alert('QR: '+decodedText); }
+}
+function onScanFailure(err){}
+
+const html5QrCode = new Html5Qrcode("reader");
+const config = { fps: 10, qrbox: {width:250, height:250} };
+html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure).catch(err=>{ document.getElementById('reader').innerHTML='<div style="padding:40px;color:#888">الكاميرا غير متاحة - استخدم الإدخال اليدوي بالأسفل<br><br>'+err+'</div>'; });
+
+function goManual(){
+  const rest=document.getElementById('manualRest').value.trim();
+  const table=document.getElementById('manualTable').value.trim()||'1';
+  if(!rest) return alert('اكتب كود المطعم');
+  location.href='/c/'+rest+'/'+table;
+}
+</script>
+</body>
+</html>

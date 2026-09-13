@@ -6,35 +6,27 @@
 <title>إدارة المنيو</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#0a0a0a;color:#fff;font-family:system-ui}
-.top{display:flex;justify-content:space-between;align-items:center;padding:16px;background:#111;border-bottom:1px solid #222}
-.btn{background:#ff8a00;color:#000;border:0;padding:10px 14px;border-radius:10px;font-weight:800;cursor:pointer} .btn-d{background:#222;color:#fff;border:1px solid #333;padding:8px 12px;border-radius:8px;cursor:pointer}
-.wrap{max-width:900px;margin:auto;padding:16px}
-.form{background:#151515;border:1px solid #222;border-radius:14px;padding:16px;display:grid;gap:10px;margin-bottom:16px}
-input,select,textarea{background:#1e1e1e;border:1px solid #333;color:#fff;padding:10px;border-radius:8px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-.card{background:#151515;border:1px solid #222;border-radius:12px;padding:12px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#111;border-bottom:1px solid #222}
+.btn{background:#ff8a00;color:#000;border:0;padding:8px 12px;border-radius:8px;font-weight:800;cursor:pointer}.btn-d{background:#222;color:#fff;border:1px solid #333;padding:6px 10px;border-radius:6px;cursor:pointer}
+.wrap{max-width:900px;margin:auto;padding:12px}
+.form{background:#151515;border:1px solid #222;border-radius:12px;padding:12px;display:grid;gap:8px;margin-bottom:12px}
+input{background:#1e1e1e;border:1px solid #333;color:#fff;padding:8px;border-radius:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.card{background:#151515;border:1px solid #222;border-radius:10px;padding:10px}
 </style>
 </head>
 <body>
-<div class="top"><div><b id="restName">...</b><div style="font-size:11px;color:#888">إدارة المنيو - رابط الزبون: <span id="link" style="color:#ff8a00"></span> <button class="btn-d" onclick="copyLink()">نسخ</button></div></div><div style="display:flex;gap:8px"><button class="btn" onclick="window.open('/menu/'+rid,'_blank')">👁️ معاينة صفحة الزبون</button><button class="btn-d" onclick="location.href='/'">⬅️ رجوع</button></div></div>
+<div class="top"><div><b id="restName">...</b><div style="font-size:11px;color:#888">إدارة المنيو - <span id="link"></span></div></div><div><button class="btn-d" onclick="window.open('/menu/'+rid,'_blank')">👁️ منيو الزبون</button><button class="btn-d" onclick="location.href='/owner'">⬅️ منصة المطعم</button></div></div>
 <div class="wrap">
-<div class="form">
-  <h3 style="margin:0">إضافة صنف جديد</h3>
-  <div style="display:flex;gap:8px"><input id="fName" placeholder="اسم الصنف - مثلا بيتزا مارغريتا" style="flex:1"><input id="fPrice" type="number" placeholder="السعر" style="width:100px"></div>
-  <div style="display:flex;gap:8px"><input id="fCat" placeholder="التصنيف - بيتزا / برجر / باستا" style="flex:1"><input id="fDesc" placeholder="وصف قصير (اختياري)" style="flex:1"></div>
-  <button class="btn" onclick="addItem()">+ إضافة للمنيو</button>
-</div>
+<div class="form"><div style="display:flex;gap:6px"><input id="fName" placeholder="اسم الصنف" style="flex:1"><input id="fPrice" type="number" placeholder="السعر" style="width:80px"></div><div style="display:flex;gap:6px"><input id="fCat" placeholder="تصنيف - بيتزا" style="flex:1"><input id="fDesc" placeholder="وصف" style="flex:1"></div><button class="btn" onclick="add()">+ إضافة</button></div>
 <div class="grid" id="grid"></div>
 </div>
 <script>
-const rid=location.pathname.split('/').pop();
-let MENU=[];
+const rid=location.pathname.split('/').pop(); let MENU=[];
 async function load(){ const [r,m]=await Promise.all([fetch('/api/restaurants/'+rid).then(x=>x.json()), fetch('/api/restaurants/'+rid+'/menu').then(x=>x.json())]); document.getElementById('restName').textContent=r.name; document.getElementById('link').textContent=location.origin+'/menu/'+rid; MENU=m; render(); }
-function render(){ document.getElementById('grid').innerHTML=MENU.map(i=>`<div class="card"><b>${i.name}</b><div style="font-size:12px;color:#888">${i.category||''} - ${i.desc||''}</div><div style="margin-top:6px;font-weight:800;color:#ff8a00">${i.price} د.ل</div><div style="display:flex;gap:6px;margin-top:10px"><button class="btn-d" onclick="del('${i.id}')">🗑️ حذف</button><button class="btn-d" onclick="toggle('${i.id}')">${i.available===false?'✅ تفعيل':'⏸️ إخفاء'}</button></div></div>`).join('')||'<div style="color:#666">لا يوجد أصناف - أضف أول صنف</div>'; }
-async function addItem(){ const name=document.getElementById('fName').value.trim(); const price=Number(document.getElementById('fPrice').value); const category=document.getElementById('fCat').value.trim()||'عام'; const desc=document.getElementById('fDesc').value.trim(); if(!name||!price) return alert('اكتب الاسم والسعر'); const res=await fetch('/api/restaurants/'+rid+'/menu',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,price,category,desc})}).then(r=>r.json()); document.getElementById('fName').value=''; document.getElementById('fPrice').value=''; await load(); }
-async function del(id){ if(!confirm('حذف الصنف؟')) return; await fetch('/api/restaurants/'+rid+'/menu/'+id,{method:'DELETE'}); await load(); }
-async function toggle(id){ const it=MENU.find(x=>x.id===id); await fetch('/api/restaurants/'+rid+'/menu/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({available:!(it.available!==false)})}); await load(); }
-function copyLink(){ navigator.clipboard.writeText(location.origin+'/menu/'+rid); alert('تم نسخ رابط الزبون: '+location.origin+'/menu/'+rid); }
+function render(){ document.getElementById('grid').innerHTML=MENU.map(i=>`<div class="card"><b>${i.name}</b><div style="font-size:11px;color:#888">${i.category} - ${i.desc||''}</div><div style="color:#ff8a00;font-weight:800;margin-top:4px">${i.price} د.ل</div><div style="display:flex;gap:6px;margin-top:8px"><button class="btn-d" onclick="del('${i.id}')">حذف</button></div></div>`).join('')||'لا يوجد'; }
+async function add(){ const name=document.getElementById('fName').value.trim(); const price=Number(document.getElementById('fPrice').value); const category=document.getElementById('fCat').value.trim()||'عام'; const desc=document.getElementById('fDesc').value.trim(); if(!name||!price) return alert('اكتب الاسم والسعر'); await fetch('/api/restaurants/'+rid+'/menu',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,price,category,desc})}); document.getElementById('fName').value=''; document.getElementById('fPrice').value=''; load(); }
+async function del(id){ if(!confirm('حذف؟')) return; await fetch('/api/restaurants/'+rid+'/menu/'+id,{method:'DELETE'}); load(); }
 load();
 </script>
 </body>

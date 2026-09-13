@@ -1,0 +1,125 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>منصة المطعم - Qaima</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0f0f0f;color:#fff;font-family:system-ui}
+.top{display:flex;justify-content:space-between;align-items:center;padding:14px;background:#111;border-bottom:1px solid #222}
+.btn{background:#ff8a00;color:#000;border:0;padding:10px 14px;border-radius:9px;font-weight:900;cursor:pointer}.btn-d{background:#222;color:#fff;border:1px solid #333;padding:8px 10px;border-radius:8px;cursor:pointer}
+.login{max-width:380px;margin:60px auto;background:#151515;border:1px solid #222;border-radius:16px;padding:20px;text-align:center}
+input{background:#1e1e1e;border:1px solid #333;color:#fff;padding:12px;border-radius:10px;width:100%;margin-top:10px}
+.dash{display:none;max-width:1100px;margin:auto;padding:12px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.card{background:#151515;border:1px solid #222;border-radius:12px;padding:12px}.card h3{margin:0;font-size:11px;color:#888}.card .num{font-size:20px;font-weight:900;margin-top:4px}
+.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}.tab{padding:8px 14px;border-radius:999px;background:#222;border:1px solid #333;cursor:pointer;font-size:13px}.tab.active{background:#ff8a00;color:#000;border-color:#ff8a00;font-weight:800}
+.section{display:none}.section.active{display:block}
+.order{background:#151515;border:1px solid #222;border-radius:12px;padding:12px;margin-bottom:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.item{background:#151515;border:1px solid #222;border-radius:10px;padding:10px}
+.qrgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.qrbox{background:#fff;color:#000;border-radius:12px;padding:12px;text-align:center}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<div class="top"><div><b>منصة المطعم 🍽️</b><div style="font-size:11px;color:#888" id="restInfo">دخول آمن برقم الهاتف والباسورد</div></div><div><a href="/" class="btn-d" style="text-decoration:none">🏠</a> <button class="btn-d" onclick="logout()" id="logoutBtn" style="display:none">خروج</button></div></div>
+
+<div id="loginBox" class="login">
+  <h2>دخول صاحب المطعم</h2>
+  <p style="color:#888;font-size:13px">ادخل رقم الهاتف والباسورد اللي عطاهولك السوبر ادمين</p>
+  <input id="phone" placeholder="رقم الهاتف - 091...">
+  <input id="pass" type="password" placeholder="الباسورد">
+  <button class="btn" style="width:100%;margin-top:12px" onclick="login()">دخول 🚀</button>
+  <div style="margin-top:12px;font-size:12px;color:#666">مثال: 0911111111 / 1234</div>
+</div>
+
+<div id="dash" class="dash">
+  <div class="stats" id="stats"></div>
+  <div class="tabs"><div class="tab active" onclick="tab('orders')">📦 الطلبات الحية</div><div class="tab" onclick="tab('menu')">📋 إدارة المنيو</div><div class="tab" onclick="tab('qr')">🔳 QR الطاولات</div><div class="tab" onclick="tab('settings')">⚙️ الإعدادات</div></div>
+
+  <div id="sec-orders" class="section active"><div id="orders"></div></div>
+  <div id="sec-menu" class="section">
+    <div style="background:#151515;border:1px solid #222;border-radius:12px;padding:12px;display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <input id="mName" placeholder="اسم الصنف"><input id="mPrice" type="number" placeholder="السعر" style="width:90px"><input id="mCat" placeholder="تصنيف" style="width:110px"><input id="mDesc" placeholder="وصف" style="flex:1"><button class="btn" onclick="addMenu()">+ إضافة</button>
+    </div>
+    <div class="grid" id="menuGrid"></div>
+  </div>
+  <div id="sec-qr" class="section">
+    <div style="background:#151515;border:1px solid #222;border-radius:12px;padding:12px;margin-bottom:12px">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">عدد الطاولات: <input id="tablesCount" type="number" style="width:80px" value="10"> <button class="btn-d" onclick="genQR()">توليد QR لكل الطاولات 🔳</button> <button class="btn-d" onclick="printQR()">🖨️ طباعة</button></div>
+      <div style="font-size:12px;color:#888;margin-top:8px">كل QR يفتح منيو مطعمك مع رقم الطاولة - الزبون يمسح ويطلب</div>
+    </div>
+    <div class="qrgrid" id="qrGrid"></div>
+  </div>
+  <div id="sec-settings" class="section"><div class="card"><div id="settingsBox"></div></div></div>
+</div>
+
+<script>
+let REST=null, MENU=[], ORDERS=[];
+const urlParams=new URLSearchParams(location.search);
+async function login(){
+  const phone=document.getElementById('phone').value.trim(); const password=document.getElementById('pass').value.trim();
+  if(!phone||!password) return alert('اكتب الهاتف والباسورد');
+  const res=await fetch('/api/auth/owner/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone,password})}).then(r=>r.json());
+  if(res.error) return alert(res.error);
+  REST=res.restaurant; localStorage.setItem('qaima_rest', JSON.stringify(REST)); showDash();
+}
+function logout(){ localStorage.removeItem('qaima_rest'); location.reload(); }
+function showDash(){
+  if(!REST){ const saved=localStorage.getItem('qaima_rest'); if(saved){ REST=JSON.parse(saved); } else return; }
+  document.getElementById('loginBox').style.display='none'; document.getElementById('dash').style.display='block'; document.getElementById('logoutBtn').style.display='inline-block';
+  document.getElementById('restInfo').textContent=REST.name+' - '+REST.ownerName+' - '+REST.phone+' - '+REST.status+' - '+REST.remainingDays+' يوم';
+  loadAll();
+}
+async function loadAll(){
+  const [menu, orders]=await Promise.all([fetch('/api/restaurants/'+REST.id+'/menu').then(r=>r.json()), fetch('/api/orders?restaurant='+REST.id).then(r=>r.json())]);
+  MENU=menu; ORDERS=orders;
+  document.getElementById('stats').innerHTML=`
+    <div class="card"><h3>طلبات اليوم</h3><div class="num">${orders.filter(o=>new Date(o.createdAt).toDateString()===new Date().toDateString()).length}</div></div>
+    <div class="card"><h3>إجمالي الطلبات</h3><div class="num">${orders.length}</div></div>
+    <div class="card"><h3>مبيعات اليوم</h3><div class="num">${orders.filter(o=>new Date(o.createdAt).toDateString()===new Date().toDateString()).reduce((s,x)=>s+(x.total||0),0)} د.ل</div></div>
+    <div class="card"><h3>حالة الاشتراك</h3><div class="num" style="font-size:14px">${REST.status} - ${REST.remainingDays} يوم</div></div>
+  `;
+  document.getElementById('orders').innerHTML=orders.map(o=>`
+    <div class="order">
+      <div style="display:flex;justify-content:space-between"><b>طاولة ${o.table||'-'} - ${o.customerName||'زبون'}</b><span style="font-size:11px;color:#888">${new Date(o.createdAt).toLocaleString('ar-LY')}</span></div>
+      <div style="font-size:12px;color:#aaa;margin:6px 0">${(o.items||[]).map(i=>`${i.name} x${i.qty}`).join('، ')} - <b>${o.total} د.ل</b></div>
+      <div style="font-size:11px;color:#888">${o.customerPhone||''} - ${o.address||''}</div>
+      <div style="display:flex;gap:6px;margin-top:8px"><select onchange="updateOrder('${o.id}', this.value)" style="padding:6px;border-radius:6px;background:#222;color:#fff;border:1px solid #333"><option ${o.status==='جديد'?'selected':''}>جديد</option><option ${o.status==='قيد التحضير'?'selected':''}>قيد التحضير</option><option ${o.status==='جاهز'?'selected':''}>جاهز</option><option ${o.status==='تم التوصيل'?'selected':''}>تم التوصيل</option><option ${o.status==='ملغي'?'selected':''}>ملغي</option></select></div>
+    </div>`).join('')||'<div style="color:#666;text-align:center;padding:20px">لا يوجد طلبات بعد - شارك QR مع الزبائن</div>';
+  document.getElementById('menuGrid').innerHTML=MENU.map(i=>`<div class="item"><b>${i.name}</b><div style="font-size:11px;color:#888">${i.category} - ${i.desc||''}</div><div style="color:#ff8a00;font-weight:800;margin-top:4px">${i.price} د.ل</div><div style="display:flex;gap:6px;margin-top:8px"><button class="btn-d" onclick="delMenu('${i.id}')">حذف</button><button class="btn-d" onclick="toggleMenu('${i.id}')">${i.available===false?'تفعيل':'إخفاء'}</button></div></div>`).join('');
+  document.getElementById('settingsBox').innerHTML=`
+    <b>${REST.name}</b><div style="font-size:12px;color:#888;margin-top:6px">الشخص: ${REST.ownerName} - الهاتف: ${REST.phone} - الباسورد: ${REST.password}</div>
+    <div style="font-size:12px;color:#888;margin-top:6px">الباقة: ${REST.package} - الانتهاء: ${REST.expiry} - متبقي: ${REST.remainingDays} يوم</div>
+    <div style="margin-top:10px"><b>رابط الزبون العام:</b><br><span style="color:#ff8a00;font-size:12px">${location.origin}/menu/${REST.id}</span> <button class="btn-d" onclick="navigator.clipboard.writeText(location.origin+'/menu/${REST.id}')">نسخ</button></div>
+    <div style="margin-top:8px"><b>رابط QR مع طاولة:</b><br><span style="color:#ff8a00;font-size:12px">${location.origin}/c/${REST.id}/1</span></div>
+  `;
+  document.getElementById('tablesCount').value=REST.tables||10;
+}
+function tab(name){ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.section').forEach(s=>s.classList.remove('active')); document.querySelector(`[onclick="tab('${name}')"]`).classList.add('active'); document.getElementById('sec-'+name).classList.add('active'); if(name==='qr') genQR(); }
+async function addMenu(){ const name=document.getElementById('mName').value.trim(); const price=Number(document.getElementById('mPrice').value); const category=document.getElementById('mCat').value.trim()||'عام'; const desc=document.getElementById('mDesc').value.trim(); if(!name||!price) return alert('اكتب الاسم والسعر'); await fetch('/api/restaurants/'+REST.id+'/menu',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,price,category,desc})}); document.getElementById('mName').value=''; document.getElementById('mPrice').value=''; loadAll(); }
+async function delMenu(id){ if(!confirm('حذف؟')) return; await fetch('/api/restaurants/'+REST.id+'/menu/'+id,{method:'DELETE'}); loadAll(); }
+async function toggleMenu(id){ const it=MENU.find(x=>x.id===id); await fetch('/api/restaurants/'+REST.id+'/menu/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({available:!(it.available!==false)})}); loadAll(); }
+async function updateOrder(id,status){ await fetch('/api/orders/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})}); loadAll(); }
+function genQR(){
+  const count=Number(document.getElementById('tablesCount').value)||10;
+  const grid=document.getElementById('qrGrid'); grid.innerHTML='';
+  for(let i=1;i<=count;i++){
+    const url=`${location.origin}/c/${REST.id}/${i}`;
+    const div=document.createElement('div'); div.className='qrbox';
+    div.innerHTML=`<div style="font-weight:900;margin-bottom:6px">طاولة ${i}</div><div id="q${i}"></div><div style="font-size:10px;margin-top:6px;word-break:break-all">${url}</div>`;
+    grid.appendChild(div);
+    setTimeout(()=>{ new QRCode(document.getElementById('q'+i), {text:url, width:120, height:120}); },100);
+  }
+  // حفظ عدد الطاولات
+  fetch('/api/restaurants/'+REST.id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({tables:count})});
+}
+function printQR(){ window.print(); }
+// auto login if saved or rest param
+(function(){ const restParam=new URLSearchParams(location.search).get('rest'); if(restParam){ fetch('/api/restaurants/'+restParam).then(r=>r.json()).then(rst=>{ if(rst.phone){ document.getElementById('phone').value=rst.phone; document.getElementById('pass').value=rst.password; }}); } if(localStorage.getItem('qaima_rest')){ REST=JSON.parse(localStorage.getItem('qaima_rest')); showDash(); } })();
+</script>
+</body>
+</html>

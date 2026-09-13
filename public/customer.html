@@ -1,0 +1,61 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>منيو المطعم</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui;background:#faf7f2;color:#222}
+.header{background:#111;color:#fff;padding:18px;text-align:center;position:sticky;top:0;z-index:10}
+.cats{display:flex;gap:8px;padding:10px;overflow:auto;background:#fff;border-bottom:1px solid #eee;position:sticky;top:68px;z-index:9}
+.cat{padding:7px 12px;border-radius:999px;background:#f0e9df;border:1px solid #e5d9c5;white-space:nowrap;cursor:pointer;font-size:13px}.cat.active{background:#ff8a00;color:#000;border-color:#ff8a00;font-weight:800}
+.menu{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;padding:12px;max-width:1100px;margin:auto}
+.item{background:#fff;border:1px solid #eee;border-radius:14px;padding:12px;display:flex;gap:10px}
+.item img{width:64px;height:64px;border-radius:10px;background:#f5f0e8;object-fit:cover}
+.add{background:#111;color:#fff;border:0;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:12px;margin-top:6px}
+.cart{position:fixed;bottom:0;left:0;right:0;background:#111;color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;z-index:20;transform:translateY(100%);transition:.3s}.cart.show{transform:translateY(0)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:12px;z-index:30}.modal.show{display:flex}.box{background:#fff;border-radius:14px;padding:16px;max-width:400px;width:100%}
+input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="header"><h1 id="restName" style="margin:0;font-size:20px">...</h1><div id="restInfo" style="font-size:12px;color:#aaa;margin-top:4px"></div></div>
+<div class="cats" id="cats"></div>
+<div class="menu" id="menu"></div>
+<div class="cart" id="cart"><div><b id="cartCount">0</b> منتج - <b id="cartTotal">0 د.ل</b> - طاولة <span id="tableNum">-</span></div><button onclick="openCheckout()" style="background:#ff8a00;color:#000;border:0;padding:9px 14px;border-radius:9px;font-weight:900;cursor:pointer">إتمام الطلب 🛒</button></div>
+<div id="checkoutModal" class="modal"><div class="box"><h3>إتمام الطلب - طاولة <span id="cTable"></span></h3><div id="checkoutItems" style="font-size:13px;color:#555;margin:8px 0"></div><input id="cName" placeholder="اسمك"><input id="cPhone" placeholder="رقم هاتفك"><textarea id="cNotes" placeholder="ملاحظات..." rows="2"></textarea><div style="display:flex;gap:8px;margin-top:12px"><button onclick="submitOrder()" style="flex:1;background:#ff8a00;border:0;padding:10px;border-radius:8px;font-weight:900;cursor:pointer">تأكيد ✅</button><button onclick="closeCheckout()" style="flex:1;background:#eee;border:0;padding:10px;border-radius:8px;cursor:pointer">إلغاء</button></div></div></div>
+<div id="successModal" class="modal"><div class="box" style="text-align:center"><h2>✅ تم الطلب!</h2><p id="orderId" style="font-size:12px;color:#666"></p><p style="font-size:13px">سيصلك طلبك على طاولة <span id="sTable"></span></p><button onclick="location.reload()" style="margin-top:12px;background:#111;color:#fff;border:0;padding:8px 12px;border-radius:8px;cursor:pointer">طلب جديد</button></div></div>
+<script>
+const pathParts=location.pathname.split('/').filter(Boolean);
+let rid=null, table=null;
+if(pathParts[0]==='c'){ rid=pathParts[1]; table=pathParts[2]||'1'; } else if(pathParts[0]==='menu'){ rid=pathParts[1]; table=new URLSearchParams(location.search).get('table')||'1'; }
+let REST=null, MENU=[], CART=[], activeCat='الكل';
+async function load(){
+  if(!rid){ document.body.innerHTML='رابط غير صحيح'; return; }
+  const [r,m]=await Promise.all([fetch('/api/restaurants/'+rid).then(x=>x.json()), fetch('/api/restaurants/'+rid+'/menu').then(x=>x.json())]);
+  if(r.error){ document.body.innerHTML='المطعم غير موجود'; return; }
+  REST=r; MENU=m;
+  document.getElementById('restName').textContent=r.name;
+  document.getElementById('restInfo').textContent=(r.status==='نشطة'?'🟢 مفتوح - ':'⏸️ ')+`طاولة ${table} - ${r.ownerName||''}`;
+  document.getElementById('tableNum').textContent=table; document.getElementById('cTable').textContent=table; document.getElementById('sTable').textContent=table;
+  const cats=['الكل',...new Set(m.map(x=>x.category))];
+  document.getElementById('cats').innerHTML=cats.map(c=>`<div class="cat ${c===activeCat?'active':''}" onclick="setCat('${c}')">${c}</div>`).join('');
+  render();
+}
+function setCat(c){activeCat=c; document.querySelectorAll('.cat').forEach(el=>el.classList.toggle('active',el.textContent===c)); render();}
+function render(){ let list=MENU.filter(x=>x.available!==false); if(activeCat!=='الكل') list=list.filter(x=>x.category===activeCat); document.getElementById('menu').innerHTML=list.map(i=>`<div class="item"><img src="https://via.placeholder.com/64/f0e9df/888?text=${encodeURIComponent(i.name.substring(0,2))}"><div style="flex:1"><b style="font-size:14px">${i.name}</b><div style="font-size:11px;color:#777">${i.desc||''}</div><div style="font-weight:800;color:#ff6a00;margin-top:4px;font-size:13px">${i.price} د.ل</div><button class="add" onclick="add('${i.id}')">+ إضافة</button></div></div>`).join('')||'<div style="grid-column:1/-1;text-align:center;color:#888;padding:30px">لا يوجد أصناف</div>'; }
+function add(id){ const it=MENU.find(x=>x.id===id); const ex=CART.find(x=>x.id===id); if(ex) ex.qty++; else CART.push({...it,qty:1}); updateCart(); }
+function updateCart(){ const total=CART.reduce((s,x)=>s+x.price*x.qty,0); const count=CART.reduce((s,x)=>s+x.qty,0); document.getElementById('cartTotal').textContent=total+' د.ل'; document.getElementById('cartCount').textContent=count; document.getElementById('cart').classList.toggle('show',count>0); }
+function openCheckout(){ if(CART.length===0) return; document.getElementById('checkoutItems').innerHTML=CART.map(x=>`${x.name} x${x.qty} - ${x.price*x.qty} د.ل`).join('<br>')+`<br><br><b>الإجمالي: ${CART.reduce((s,x)=>s+x.price*x.qty,0)} د.ل</b>`; document.getElementById('checkoutModal').classList.add('show'); }
+function closeCheckout(){document.getElementById('checkoutModal').classList.remove('show');}
+async function submitOrder(){
+  const name=document.getElementById('cName').value.trim(); const phone=document.getElementById('cPhone').value.trim();
+  if(!name||!phone) return alert('اكتب اسمك ورقمك');
+  const order={restaurantId:rid, table, restaurantName:REST.name, items:CART, total:CART.reduce((s,x)=>s+x.price*x.qty,0), customerName:name, customerPhone:phone, notes:document.getElementById('cNotes').value};
+  const res=await fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(order)}).then(r=>r.json());
+  document.getElementById('checkoutModal').classList.remove('show'); document.getElementById('orderId').textContent='رقم: '+res.id; document.getElementById('successModal').classList.add('show'); CART=[]; updateCart();
+}
+load();
+</script>
+</body>
+</html>

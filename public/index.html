@@ -3,163 +3,45 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Qaima Super Admin Pro</title>
+<title>Qaima - 3 منصات</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#080808;color:#fff;font-family:system-ui,-apple-system,Segoe UI;overflow-x:hidden}
-.topbar{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;background:#111;border-bottom:1px solid #222;flex-wrap:wrap;gap:10px}
-.logo{font-weight:900;font-size:20px} .mini{color:#888;font-size:12px}
-.badge{padding:6px 12px;border-radius:999px;font-weight:800;font-size:11px}
-.b-kv{background:#22c55e;color:#000} .b-free{background:#f59e0b;color:#000}
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:16px}
-.card{background:#151515;border:1px solid #222;border-radius:14px;padding:16px;cursor:pointer;transition:.2s}
-.card:hover{border-color:#444} .card.active{border-color:#ff8a00;background:#1a1200}
-.card h3{margin:0;font-size:11px;color:#888} .card .num{font-size:24px;font-weight:900;margin-top:6px}
-.toolbar{display:flex;gap:10px;padding:0 16px 12px;flex-wrap:wrap}
-.btn{background:#ff8a00;color:#000;border:0;padding:11px 16px;border-radius:10px;font-weight:900;cursor:pointer}
-.btn-d{background:#222;color:#fff;border:1px solid #333;padding:9px 12px;border-radius:9px;cursor:pointer;font-size:13px}
-input,select,textarea{background:#1c1c1c;border:1px solid #2a2a2a;color:#fff;padding:10px 12px;border-radius:10px;outline:none;font-size:13px}
-.table-wrap{padding:0 16px 40px;overflow:auto}
-table{width:100%;border-collapse:collapse;background:#121212;border-radius:14px;overflow:hidden;min-width:900px}
-th{background:#1c1c1c;color:#888;font-size:11px;padding:12px;text-align:right} td{padding:12px;border-top:1px solid #1e1e1e;font-size:13px}
-.s{padding:5px 10px;border-radius:999px;font-size:11px;font-weight:700;display:inline-block}
-.s-a{background:#16a34a;color:#fff} .s-t{background:#2563eb;color:#fff} .s-s{background:#444;color:#ccc} .s-e{background:#7f1d1d;color:#ffb4b4}
-.actions{display:flex;gap:6px;flex-wrap:wrap}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
-.modal.show{display:flex}
-.box{background:#161616;border:1px solid #2a2a2a;border-radius:16px;padding:20px;max-width:480px;width:100%;max-height:90vh;overflow:auto}
-.row{display:flex;gap:10px} .row>*{flex:1}
-.chip{padding:6px 10px;border-radius:8px;background:#222;border:1px solid #333;cursor:pointer;font-size:12px}
-.chip:hover{background:#2a2a2a}
-@media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}}
+*{box-sizing:border-box}body{margin:0;background:#0a0a0a;color:#fff;font-family:system-ui;text-align:center}
+.hero{padding:50px 20px}
+.hero h1{font-size:36px;margin:0} .hero p{color:#888;margin-top:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;max-width:1000px;margin:40px auto;padding:0 20px}
+.card{background:#151515;border:1px solid #222;border-radius:20px;padding:30px;cursor:pointer;transition:.2s;text-decoration:none;color:#fff;display:block}
+.card:hover{transform:translateY(-4px);border-color:#ff8a00}
+.card .icon{font-size:48px;margin-bottom:12px} .card h2{margin:10px 0 6px} .card p{color:#888;font-size:13px;line-height:1.6}
+.badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:800;margin-top:10px}
+.b1{background:#22c55e;color:#000} .b2{background:#3b82f6;color:#fff} .b3{background:#ff8a00;color:#000}
 </style>
 </head>
 <body>
-<div class="topbar">
-  <div><div class="logo">Qaima Super Admin <span style="color:#ff8a00">PRO</span></div><div class="mini">تحكم كامل بالمطاعم - تعديل - تمديد - إيقاف - تغيير باقة</div></div>
-  <div style="display:flex;gap:8px"><button class="btn-d" onclick="viewOrders()">📦 الطلبات</button><span id="kvBadge" class="badge">...</span><span class="badge b-free">🎁 شهر مجاني مفعل</span></div>
+<div class="hero">
+  <h1>Qaima <span style="color:#ff8a00">3 منصات</span></h1>
+  <p>نظام مطاعم متكامل - زبون + صاحب مطعم + سوبر ادمين - كلهم مربوطين</p>
+  <div style="margin-top:16px"><span class="badge b1" id="kv">...</span></div>
 </div>
-
-<div class="stats" id="stats"></div>
-
-<div class="toolbar">
-  <button class="btn" onclick="openAdd()">+ إضافة مطعم - شهر مجاني 🎁</button>
-  <select id="fPkg" onchange="render()"><option value="all">كل الباقات</option><option value="99">99 د.ل</option><option value="199">199 د.ل</option><option value="399">399 د.ل</option></select>
-  <select id="fSt" onchange="render()"><option value="all">كل الحالات</option><option value="نشطة">نشطة</option><option value="تجربة مجانية">تجربة</option><option value="موقوفة">موقوفة</option><option value="منتهي">منتهية</option></select>
-  <input id="search" placeholder="ابحث اسم / هاتف..." oninput="render()" style="flex:1;min-width:200px">
+<div class="grid">
+  <a class="card" href="/qr">
+    <div class="icon">📱</div>
+    <h2>1- منصة الزبون</h2>
+    <p>يفتح كاميرا QR، يمسح كود الطاولة، يشوف المنيو ويطلب مباشرة. بدون تطبيق.</p>
+    <span class="badge b1">QR + طلب فوري</span>
+  </a>
+  <a class="card" href="/owner">
+    <div class="icon">🍽️</div>
+    <h2>2- منصة المطعم</h2>
+    <p>دخول باسم المطعم وشخص ورقم هاتف وباسورد. يدير المنيو، الطلبات، الطاولات و QR.</p>
+    <span class="badge b2">دخول آمن - إدارة كاملة</span>
+  </a>
+  <a class="card" href="/super">
+    <div class="icon">👑</div>
+    <h2>3- سوبر ادمين</h2>
+    <p>تحكم كامل بالمطاعم والاشتراكات، شهر مجاني، تفعيل، إيقاف، MRR، وطباعة QR لكل مطعم.</p>
+    <span class="badge b3">تحكم PRO</span>
+  </a>
 </div>
-
-<div class="table-wrap"><table><thead><tr><th>#</th><th>المطعم</th><th>الباقة</th><th>الحالة</th><th>الانتهاء / متبقي</th><th>MRR</th><th>تحكم كامل</th></tr></thead><tbody id="tbody"></tbody></table></div>
-
-<!-- Add Modal -->
-<div id="addModal" class="modal"><div class="box">
-  <h3>إضافة مطعم - شهر مجاني 🎁</h3>
-  <div style="background:#16a34a;color:#fff;padding:8px;border-radius:8px;font-size:12px;margin:10px 0">أي مطعم جديد ياخد 30 يوم مجاني تلقائي - MRR = 0 أول شهر</div>
-  <input id="aName" placeholder="اسم المطعم - مثال: مطعم طرابلس" style="width:100%;margin-top:8px">
-  <input id="aPhone" placeholder="رقم الهاتف (اختياري)" style="width:100%;margin-top:8px">
-  <select id="aPkg" style="width:100%;margin-top:8px"><option value="99">البداية - 99 د.ل</option><option value="199" selected>الاحترافية - 199 د.ل</option><option value="399">المؤسسي - 399 د.ل</option></select>
-  <div class="row" style="margin-top:12px"><button class="btn" onclick="doAdd()" style="flex:1">تفعيل المجاني 🎁</button><button class="btn-d" onclick="closeAdd()">إلغاء</button></div>
-</div></div>
-
-<!-- Edit Modal -->
-<div id="editModal" class="modal"><div class="box">
-  <h3>تحكم بالمطعم - تعديل كامل ✏️</h3>
-  <input id="eName" placeholder="اسم المطعم" style="width:100%;margin-top:10px">
-  <input id="ePhone" placeholder="الهاتف" style="width:100%;margin-top:8px">
-  <div class="row" style="margin-top:8px">
-    <select id="ePkgSel"><option value="99">99 د.ل - البداية</option><option value="199">199 د.ل - احترافية</option><option value="399">399 د.ل - مؤسسي</option></select>
-    <select id="eStatus"><option>نشطة</option><option>تجربة مجانية</option><option>موقوفة</option><option>منتهي</option></select>
-  </div>
-  <div class="row" style="margin-top:8px"><input id="eExpiry" type="date"><input id="eOrigPrice" placeholder="السعر الأصلي" type="number"></div>
-  <textarea id="eNotes" placeholder="ملاحظات داخلية..." style="width:100%;margin-top:8px" rows="2"></textarea>
-  <div style="margin-top:10px"><div style="font-size:11px;color:#888;margin-bottom:6px">تمديد سريع:</div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="chip" onclick="quickExtend(7)">+7 أيام</span><span class="chip" onclick="quickExtend(30)">+30 يوم</span><span class="chip" onclick="quickExtend(60)">+60 يوم</span><span class="chip" onclick="quickExtend(90)">+90 يوم</span></div>
-  </div>
-  <div class="row" style="margin-top:14px"><button class="btn" onclick="saveEdit()" style="flex:1">حفظ التعديلات ✅</button><button class="btn-d" onclick="closeEdit()">إلغاء</button></div>
-  <div style="margin-top:12px;display:flex;gap:8px"><button class="btn-d" onclick="toggleStop()" style="flex:1" id="toggleBtn">⏸️ إيقاف/تفعيل</button><button class="btn-d" onclick="doActivate()" style="flex:1">💳 تفعيل مدفوع</button></div>
-  <button class="btn-d" onclick="doDel()" style="width:100%;margin-top:8px;background:#3a1111;border-color:#5a2222;color:#ff9999">🗑️ حذف المطعم نهائيا</button>
-</div></div>
-
-<script>
-let DATA=[], FILTER='all', CUR=null;
-async function load(){
-  const [d,s]=await Promise.all([fetch('/api/restaurants').then(r=>r.json()), fetch('/api/stats').then(r=>r.json())]);
-  DATA=d;
-  document.getElementById('stats').innerHTML=`
-    <div class="card ${FILTER==='all'?'active':''}" onclick="setFilter('all')"><h3>الكل</h3><div class="num">${s.total}</div><div class="mini">كل المطاعم</div></div>
-    <div class="card ${FILTER==='نشطة'?'active':''}" onclick="setFilter('نشطة')"><h3>نشطة 🟢</h3><div class="num">${s.active}</div><div class="mini">${s.mrr} د.ل MRR</div></div>
-    <div class="card ${FILTER==='تجربة مجانية'?'active':''}" onclick="setFilter('تجربة مجانية')"><h3>تجربة مجانية 🎁</h3><div class="num">${s.trial}</div><div class="mini">شهر مجاني</div></div>
-    <div class="card ${FILTER==='موقوفة'?'active':''}" onclick="setFilter('موقوفة')"><h3>موقوفة ⏸️</h3><div class="num">${s.stopped||0}</div><div class="mini">متوقفة مؤقتا</div></div>
-    <div class="card ${FILTER==='منتهي'?'active':''}" onclick="setFilter('منتهي')"><h3>منتهية 🔴</h3><div class="num">${s.expired}</div><div class="mini">تحتاج تجديد</div></div>
-  `;
-  const h=await fetch('/api/health').then(r=>r.json());
-  document.getElementById('kvBadge').innerHTML=h.hasKV?'<span class="badge b-kv">✅ KV متصل - دائم</span>':'<span class="badge" style="background:#facc15;color:#000">⚠️ مؤقت</span>';
-  render();
-}
-function setFilter(f){ FILTER=f; document.getElementById('fSt').value=f; render(); function viewOrders(){ window.open('/api/orders','_blank'); } load(); }
-function render(){
-  const pkg=document.getElementById('fPkg').value;
-  const st=document.getElementById('fSt').value;
-  const q=document.getElementById('search').value.toLowerCase();
-  let list=[...DATA];
-  if(FILTER!=='all') list=list.filter(x=>(x.status||'').includes(FILTER));
-  if(st!=='all') list=list.filter(x=>(x.status||'').includes(st));
-  if(pkg!=='all') list=list.filter(x=>String(x.originalPrice||x.price)===pkg);
-  if(q) list=list.filter(x=>(x.name||'').toLowerCase().includes(q)||(x.phone||'').includes(q));
-  document.getElementById('tbody').innerHTML=list.map((r,i)=>`
-    <tr>
-      <td>${i+1}</td>
-      <td><b>${r.name}</b><div style="font-size:11px;color:#888">${r.id} • ${r.phone||''}</div></td>
-      <td><span style="font-size:12px">${r.package}</span><div style="font-size:11px;color:#888">الأصلي: ${r.originalPrice} د.ل</div></td>
-      <td><span class="s ${r.status==='نشطة'?'s-a':r.status.includes('تجربة')?'s-t':r.status==='موقوفة'?'s-s':'s-e'}">${r.status}</span>${r.isTrial?'<div style="font-size:10px;color:#60a5fa">🎁 مجاني</div>':''}</td>
-      <td>${r.expiry}<div style="font-size:11px;color:${r.remainingDays<=3?'#ff5555':'#888'}">${r.remainingDays} يوم متبقي</div></td>
-      <td><b>${r.mrr||0} د.ل</b>${r.price===0?'<div style="font-size:10px;color:#22c55e">مجاني</div>':''}</td>
-      <td><div class="actions"><button class="btn-d" onclick="openEdit('${r.id}')">⚙️ تحكم</button><button class="btn-d" onclick="location.href='/manage/'+'${r.id}'">📋 منيو</button><button class="btn-d" onclick="window.open('/menu/'+'${r.id}','_blank')">👁️ صفحة الزبون</button></div></td>
-    </tr>`).join('')||'<tr><td colspan=7 style="text-align:center;color:#666;padding:30px">لا يوجد</td></tr>';
-}
-function openAdd(){document.getElementById('addModal').classList.add('show')}
-function closeAdd(){document.getElementById('addModal').classList.remove('show')}
-async function doAdd(){
-  const name=document.getElementById('aName').value.trim(); const phone=document.getElementById('aPhone').value.trim(); const price=document.getElementById('aPkg').value;
-  if(!name) return alert('اكتب اسم المطعم');
-  await fetch('/api/restaurants',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,phone,price})});
-  closeAdd(); document.getElementById('aName').value=''; await function viewOrders(){ window.open('/api/orders','_blank'); } load();
-}
-function openEdit(id){
-  CUR=DATA.find(x=>x.id===id); if(!CUR) return;
-  document.getElementById('eName').value=CUR.name; document.getElementById('ePhone').value=CUR.phone||'';
-  document.getElementById('ePkgSel').value=CUR.originalPrice||CUR.price||99;
-  document.getElementById('eStatus').value=CUR.status;
-  document.getElementById('eExpiry').value=CUR.expiry;
-  document.getElementById('eOrigPrice').value=CUR.originalPrice||'';
-  document.getElementById('eNotes').value=CUR.notes||'';
-  document.getElementById('editModal').classList.add('show');
-  document.getElementById('toggleBtn').textContent=CUR.status==='موقوفة'?'▶️ تفعيل':'⏸️ إيقاف مؤقت';
-}
-function closeEdit(){document.getElementById('editModal').classList.remove('show'); CUR=null}
-async function saveEdit(){
-  if(!CUR) return;
-  const body={
-    name:document.getElementById('eName').value,
-    phone:document.getElementById('ePhone').value,
-    status:document.getElementById('eStatus').value,
-    expiry:document.getElementById('eExpiry').value,
-    originalPrice:Number(document.getElementById('eOrigPrice').value)||CUR.originalPrice,
-    notes:document.getElementById('eNotes').value,
-    package: document.getElementById('ePkgSel').value==='99'?'البداية - 99 د.ل':document.getElementById('ePkgSel').value==='199'?'الاحترافية - 199 د.ل':'المؤسسي - 399 د.ل'
-  };
-  // handle price logic via status endpoint if status changed
-  await fetch('/api/restaurants/'+CUR.id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  // if package changed also update plan
-  await fetch('/api/restaurants/'+CUR.id+'/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({price:body.originalPrice,package:body.package})});
-  if(body.status!==CUR.status){ await fetch('/api/restaurants/'+CUR.id+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:body.status})}); }
-  closeEdit(); await function viewOrders(){ window.open('/api/orders','_blank'); } load();
-}
-async function quickExtend(d){ if(!CUR) return; await fetch('/api/restaurants/'+CUR.id+'/extend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days:d})}); await function viewOrders(){ window.open('/api/orders','_blank'); } load(); const r=DATA.find(x=>x.id===CUR.id); if(r){ document.getElementById('eExpiry').value=r.expiry; } }
-async function doActivate(){ if(!CUR) return; await fetch('/api/restaurants/'+CUR.id+'/activate',{method:'POST'}); closeEdit(); await function viewOrders(){ window.open('/api/orders','_blank'); } load(); }
-async function toggleStop(){ if(!CUR) return; await fetch('/api/restaurants/'+CUR.id+'/toggle',{method:'POST'}); closeEdit(); await function viewOrders(){ window.open('/api/orders','_blank'); } load(); }
-async function doDel(){ if(!CUR) return; if(!confirm('تأكيد حذف '+CUR.name+' نهائيا؟')) return; await fetch('/api/restaurants/'+CUR.id,{method:'DELETE'}); closeEdit(); await function viewOrders(){ window.open('/api/orders','_blank'); } load(); }
-async function ext(id){ const d=prompt('كم يوم تبي تمدد؟ اكتب رقم: 30 مثلا'); if(!d) return; await fetch('/api/restaurants/'+id+'/extend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days:Number(d)})}); await function viewOrders(){ window.open('/api/orders','_blank'); } load(); }
-function viewOrders(){ window.open('/api/orders','_blank'); } load();
-</script>
+<script>fetch('/api/health').then(r=>r.json()).then(d=>{document.getElementById('kv').textContent=d.kv?'✅ KV متصل - 3 منصات مربوطة':'⚠️ وضع مؤقت'});</script>
 </body>
 </html>
