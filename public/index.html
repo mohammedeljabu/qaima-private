@@ -47,7 +47,7 @@ td{padding:14px;border-top:1px solid #1e1e1e;font-size:14px}
 </div>
 
 <div class="toolbar">
-  <button class="btn" onclick="openAdd()">+ إضافة مطعم واشتراكات</button>
+  <button class="btn" onclick="openAdd()">+ إضافة مطعم - شهر مجاني 🎁</button>
   <select id="filterPackage" onchange="render()"><option value="all">كل الباقات</option><option value="99">البداية - 99 د.ل</option><option value="199">الاحترافية - 199 د.ل</option><option value="399">المؤسسي - 399 د.ل</option></select>
   <select id="filterStatus" onchange="render()"><option value="all">كل الحالات</option><option value="نشطة">نشطة</option><option value="تجربة">تجربة مجانية</option><option value="منتهي">منتهي</option></select>
   <input id="search" placeholder="ابحث باسم المطعم أو الهاتف..." oninput="render()" style="flex:1;min-width:200px">
@@ -62,11 +62,11 @@ td{padding:14px;border-top:1px solid #1e1e1e;font-size:14px}
 
 <!-- Add Modal Simple -->
 <div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:center;justify-content:center;padding:20px">
-  <div class="card" style="max-width:420px;width:100%">
-    <h3>إضافة مطعم جديد</h3>
+  <div class="card" style="max-width:440px;width:100%"><div style="background:#16a34a;color:#fff;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:800;margin-bottom:12px;text-align:center">🎁 أي مطعم جديد ياخد 30 يوم مجاني كامل - بدون دفع</div>
+    <h3>إضافة مطعم جديد - شهر مجاني 🎁</h3>
     <input id="mName" placeholder="اسم المطعم مثلا: مطعم طرابلس" style="width:100%;margin-top:12px">
     <select id="mPackage" style="width:100%;margin-top:10px"><option value="99">البداية - 99 د.ل - 30 يوم</option><option value="199" selected>الاحترافية - 199 د.ل - 30 يوم</option><option value="399">المؤسسي - 399 د.ل - 60 يوم</option></select>
-    <div style="display:flex;gap:10px;margin-top:14px"><button class="btn" onclick="doAdd()" style="flex:1">إنشاء وتفعيل ✅</button><button class="btn-dark" onclick="closeAdd()" style="flex:1">إلغاء</button></div>
+    <div style="display:flex;gap:10px;margin-top:14px"><button class="btn" onclick="doAdd()" style="flex:1">تفعيل الشهر المجاني 🎁✅</button><button class="btn-dark" onclick="closeAdd()" style="flex:1">إلغاء</button></div>
   </div>
 </div>
 
@@ -116,8 +116,8 @@ function render(){
       <td>${r.expiry||'-'}</td>
       <td>${r.remainingDays? r.remainingDays+' يوم':''}</td>
       <td>${r.mrr||r.price||0} د.ل</td>
-      <td><button class="btn-dark" onclick="del('${r.id}')">حذف</button></td>
-    </tr>`).join('')||`<tr><td colspan=8 style="text-align:center;padding:30px;color:#666">لا يوجد مطاعم</td></tr>`;
+      <td><div style='display:flex;gap:6px'>${r.status.includes('تجربة')?`<button class='btn' style='padding:6px 10px;font-size:12px' onclick="activate('${r.id}')">تفعيل 💳</button>`:''}<button class="btn-dark" onclick="del('${r.id}')">حذف</button></div></td>
+    </tr>`).join('')||`<tr><td colspan=8 style="text-align:center;padding:30px;color:#666">لا يوجد مطاعم - أضف أول مطعم بشهر مجاني 🎁</td></tr>`;
 }
 function openAdd(){document.getElementById('modal').style.display='flex'}
 function closeAdd(){document.getElementById('modal').style.display='none'}
@@ -129,6 +129,7 @@ async function doAdd(){
   closeAdd(); document.getElementById('mName').value=''; await load();
 }
 async function del(id){ if(!confirm('تحذف المطعم؟')) return; await fetch('/api/restaurants/'+id,{method:'DELETE'}); await load(); }
+async function activate(id){ if(!confirm('تفعيل الاشتراك المدفوع بعد الشهر المجاني؟')) return; await fetch('/api/restaurants/'+id+'/activate',{method:'POST'}); await load(); }
 checkKV(); load();
 setInterval(checkKV,8000);
 </script>
